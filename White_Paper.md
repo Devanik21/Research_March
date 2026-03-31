@@ -1,240 +1,319 @@
-White Paper: Riemannian Wave Classifier (RWC) and Geometric Wave Learner (GWL)
+White Paper
 
-Abstract
+Riemannian Wave Classifier (RWC) & Geometric Wave Learner (GWL)
 
-This white paper gives a compact but technically serious summary of two GPU-accelerated classifiers: Riemannian Wave Classifier (RWC) and Geometric Wave Learner (GWL). The project treats classification as a geometric resonance problem on a learned manifold rather than a standard decision-boundary problem. Using the EEG Eye State dataset (OpenML 1471), the framework evolves from a baseline configuration to a final polychromatic ensemble that reaches 93.27% accuracy on GWL, improving from 67.46% in the earliest version. The method combines graph geometry, spectral analysis, class potentials, discrete Ricci flow, and a holographic radial frequency kernel.
-
-1. What This Work Is
-
-This is a white paper, not the full research manuscript. It is meant to explain the idea clearly and briefly while preserving the important technical content. The focus is on:
-
-the problem being solved,
-
-the structure of the method,
-
-the data and preprocessing,
-
-the main mathematical components,
-
-the version history from V1 to V13,
-
-and the final performance outcome.
+A Geometry–Wave Hybrid Framework for EEG Eye-State Classification
 
 
-2. Core Idea
+---
 
-RWC and GWL both classify data by studying how a sample resonates with the geometry of the training manifold.
+Executive Summary
 
-RWC builds a static graph manifold, computes its Laplacian spectrum, injects class-specific potentials, and classifies by resonance energy.
+This white paper presents a concise and clear overview of two hybrid machine learning algorithms: Riemannian Wave Classifier (RWC) and Geometric Wave Learner (GWL). These methods approach classification as a geometric resonance problem on a data manifold rather than a traditional decision-boundary optimization problem.
 
-GWL starts from the same manifold idea but also applies label-driven discrete Ricci flow so that the graph geometry itself is warped to separate classes more clearly.
+The framework was developed and tested on the EEG Eye State dataset and evolved through multiple versions (V1 to V13), improving performance from ~67% to ~93.27% accuracy. The system combines graph geometry, spectral analysis, class potentials, Ricci flow, and wave-based kernels into a unified classification framework.
 
-Later versions add a Holographic Radial Frequency (HRF) kernel and a polychromatic ensemble to combine several geometric views of the same problem.
-
-
-In simple terms, the system does not ask only “what is the best boundary?” It asks “which class does this point resonate with most strongly on the manifold?”
-
-3. Dataset and Preprocessing
-
-The benchmark is the EEG Eye State dataset from OpenML.
-
-Property	Value
-
-Dataset	EEG Eye State
-OpenML ID	1471
-Samples	14,980
-Raw inputs	14 EEG channels
-Task	Binary classification
-Target	Eyes open / eyes closed
+This document summarizes the full idea, architecture, iteration history, and results in a shorter and simpler format than the main research paper.
 
 
-The preprocessing pipeline expands the raw EEG into a richer 78-dimensional representation:
+---
 
-1. Clipping of extreme values to reduce artifacts.
+1. Introduction
 
+Traditional machine learning classifiers learn decision boundaries directly in feature space. The RWC–GWL framework instead assumes that:
 
-2. Bipolar montage to capture inter-channel differences.
-
-
-3. Spectral FFT features to add frequency-domain structure.
-
-
-4. Robust scaling to reduce the effect of outliers.
+> Data lies on a geometric manifold, and classification should be based on how a sample interacts with the geometry of that manifold.
 
 
 
-Final processed shape: (14980, 78).
+Instead of asking "Which side of the boundary is this sample on?", the framework asks:
 
-4. Main Mathematical Framework
-
-4.1 Graph Construction
-
-A k-nearest-neighbor graph is built from the training data. Edge weights use a Zelnik-Manor self-tuning Gaussian bandwidth, which adapts to local density instead of using one global scale.
-
-This matters because EEG data is not uniformly distributed. Dense regions and sparse regions need different effective radii.
-
-4.2 Graph Laplacian
-
-The graph is converted into a symmetric normalized Laplacian:
-
-L = I - D^{-1/2} W D^{-1/2}
-
-Its eigendecomposition produces the spectral basis of the manifold:
-
-eigenvectors = geometric modes,
-
-eigenvalues = structural frequencies.
+> "Which class geometry does this sample resonate with more strongly?"
 
 
-4.3 Class Potentials and Resonance
 
-RWC adds a class-conditional potential to the manifold and forms a perturbed Hamiltonian:
+This leads to a hybrid system combining graph theory, spectral methods, curvature flow, and wave physics concepts.
+
+
+---
+
+2. Dataset and Feature Engineering
+
+Dataset
+
+Dataset: EEG Eye State
+
+Samples: 14,980
+
+Channels: 14 EEG channels
+
+Task: Binary classification (Eyes Open vs Eyes Closed)
+
+
+Feature Engineering Pipeline
+
+The raw EEG signals are transformed into a richer feature space:
+
+1. Signal clipping – removes extreme artifacts.
+
+
+2. Bipolar montage – captures differences between EEG channels.
+
+
+3. FFT spectral features – adds frequency-domain information.
+
+
+4. Robust scaling – reduces the effect of outliers.
+
+
+
+Final processed feature space: 78 dimensions.
+
+This step is critical because the geometric model depends heavily on feature quality.
+
+
+---
+
+3. Mathematical Framework
+
+3.1 Graph Construction
+
+A k-nearest neighbor (k-NN) graph is built from the training data. Edge weights are computed using a self-tuning Gaussian kernel, which adapts to local data density.
+
+This allows the graph to represent both dense and sparse regions properly.
+
+
+---
+
+3.2 Graph Laplacian and Spectral Basis
+
+The graph is converted into a normalized Laplacian matrix:
+
+L = I − D^{-1/2} W D^{-1/2}
+
+Where:
+
+W = weight matrix
+
+D = degree matrix
+
+L = graph Laplacian
+
+
+The eigenvectors of the Laplacian form the spectral basis of the manifold, representing geometric vibration modes of the data.
+
+
+---
+
+3.3 Riemannian Wave Classifier (RWC)
+
+RWC introduces class-specific potentials into the manifold:
 
 H^(c) = L + V^(c)
 
-Query points are projected into the spectral basis, and the final class score is computed from a Lorentzian resonance energy. The class with the strongest resonance wins.
+Where:
 
-4.4 Label-Driven Ricci Flow
+L = Laplacian
 
-GWL evolves the graph weights with discrete Ricci flow. Same-class edges are strengthened and different-class edges are weakened, so the manifold becomes more class-separated before spectral analysis.
+V^(c) = class potential
 
-This is the main geometric difference between GWL and RWC.
+H^(c) = class-specific Hamiltonian
 
-4.5 HRF Kernel
 
-Later versions add a Holographic Radial Frequency kernel:
+A query point is projected into the spectral space and evaluated using a resonance energy function. The class producing the strongest resonance is selected.
 
-Psi(d) = exp(-gamma * d^2) * (1 + cos(omega * d))
+This turns classification into a wave–energy matching problem.
 
-This captures local oscillatory structure that the global spectral model may miss.
 
-4.6 Polychromatic Forests
+---
 
-The final version uses polychromatic forests. Each tree receives a different spectral configuration, so the ensemble sees several “colors” of the same manifold. The trees are diverse by:
+3.4 Geometric Wave Learner (GWL)
 
-frequency,
+GWL extends RWC by applying label-driven discrete Ricci flow to the graph before spectral analysis.
 
-damping,
+Ricci flow modifies graph edge weights so that:
 
-neighborhood size.
+Same-class points move closer.
 
+Different-class points move further apart.
 
-Their predictions are aggregated by majority vote.
 
-5. Version History
+This means GWL learns the geometry itself, not just the classifier.
 
-The notebook develops through V1 to V13.
 
-V1 — Baseline
+---
 
-A smaller spectral basis and a simplified energy calculation were used. This version was weak but established the initial pipeline.
+3.5 Holographic Radial Frequency (HRF) Kernel
 
-Results: RWC 70.03%, GWL 67.46%.
+A later improvement adds a kernel of the form:
 
-V2 — Holographic Energy Fix
+Ψ(d) = exp(−γ d²) · (1 + cos(ω d))
 
-This was the major breakthrough. The energy calculation was corrected so that class structure was preserved at the sample level instead of being collapsed into one vector. The spectral basis was enlarged and the graph parameters were improved.
+This kernel captures:
 
-Results: RWC 83.18%, GWL 89.55%.
+Local decay (Gaussian part)
 
-V3 — Evaluation Correction
+Oscillatory structure (cosine part)
 
-The evaluation protocol was standardized with a 75/25 split. This made the benchmark more consistent.
 
-Results: RWC 84.73%, GWL 90.33%.
+This adds local texture information to the global manifold model.
 
-V4 — Architectural Cleanup
 
-The implementation was reorganized without changing the core math. This version served as the cleaner reference version.
+---
 
-Results: unchanged from V3.
+3.6 Polychromatic Forests
 
-V5 — HRF Integration
+The final system uses multiple spectral configurations in an ensemble called a Polychromatic Forest.
 
-The HRF kernel was introduced. This added local frequency texture on top of the global manifold structure.
+Each model uses different:
 
-Results: RWC 91.40%, GWL 92.63%.
+spectral frequencies,
 
-V13 — Final Polychromatic Version
+damping factors,
 
-The final version improved HRF handling, tightened local query search, and combined multiple spectral views in an ensemble.
+neighborhood sizes.
 
-Results: RWC 93.00%, GWL 93.27%.
 
-6. Performance Summary
+The ensemble combines multiple geometric views of the same data.
 
-Version	RWC	GWL
 
-V1	70.03%	67.46%
-V2	83.18%	89.55%
-V3	84.73%	90.33%
-V4	84.73%	90.33%
-V5	91.40%	92.63%
-V13	93.00%	93.27%
+---
 
+4. Version Development (V1 → V13)
 
-The total improvement for GWL is +25.81 percentage points from the baseline to the final version.
+Version	RWC	GWL	Key Change
 
-7. What the Results Mean
+V1	70.03%	67.46%	Initial manifold + resonance
+V2	83.18%	89.55%	Correct energy computation
+V3	84.73%	90.33%	Proper evaluation split
+V4	84.73%	90.33%	Code architecture cleanup
+V5	91.40%	92.63%	HRF kernel added
+V13	93.00%	93.27%	Polychromatic ensemble
 
-The strongest gains came from three ideas:
 
-1. Fixing the resonance energy computation so class structure was not collapsed.
+Total improvement (GWL): +25.81 percentage points.
 
+The largest improvement came from fixing the resonance energy formulation and later from adding HRF + ensemble diversity.
 
-2. Making the manifold richer through better graph and spectral settings.
 
+---
 
-3. Adding local frequency texture through HRF and then combining multiple spectral views in an ensemble.
+5. GPU Implementation
 
+The system is implemented using:
 
+Python 3.11
 
-The result is a classifier that is not just fitting labels, but modeling the geometry of the data.
+CuPy
 
-8. GPU Implementation
+cuML
 
-The full system is built for Python 3.11 on an NVIDIA T4 GPU using CuPy and cuML.
+NVIDIA T4 GPU
 
-Main GPU operations include:
 
-k-NN graph construction,
+GPU acceleration is used for:
 
-sparse weight assembly,
+k-NN graph construction
 
-Laplacian eigendecomposition,
+Laplacian eigendecomposition
 
-batched resonance energy computation,
+Ricci flow updates
 
-Ricci flow updates,
+Resonance energy computation
 
-and ensemble inference.
+Ensemble inference
 
 
-This makes the otherwise expensive manifold operations practical on the full dataset.
+Without GPU acceleration, the manifold computations would be very slow.
 
-9. Limitations
 
-The framework is powerful but expensive. Its main limitations are:
+---
 
-heavy graph construction cost,
+6. Key Insights from the Research
 
-eigendecomposition cost,
+The performance improvements across versions show that accuracy increased when:
 
-Ricci flow sensitivity,
+1. The spectral energy calculation was corrected.
 
-strong dependence on hyperparameters,
 
-and large runtime when using full-data settings.
+2. The manifold resolution was increased.
 
 
-Fast compressed test versions can be misleading if they remove too much geometric structure.
+3. The geometry was allowed to evolve (Ricci flow).
 
-10. Conclusion
 
-RWC and GWL form a geometry-first classification framework for EEG eye-state detection. The final system combines graph Laplacians, class potentials, Ricci flow, HRF kernels, and polychromatic ensembles into one coherent pipeline. The best reported result is 93.27% accuracy on GWL, showing that the approach is both technically distinctive and empirically strong.
+4. Local oscillatory structure was added (HRF).
 
-The main message is simple: the model improves when the geometry of the data is preserved, refined, and viewed through multiple spectral scales.
 
-Reference Note
+5. Multiple spectral views were combined (ensemble).
 
-This white paper is based on the research README describing the EEG Eye State benchmark, the full V1–V13 iteration path, the Laplacian and Hamiltonian formulation, the Ricci-flow extension, the HRF kernel, and the final polychromatic ensemble design. fileciteturn1file0
+
+
+This suggests the model works best when it captures both global geometry and local texture.
+
+
+---
+
+7. Limitations
+
+The system still has several challenges:
+
+High computational cost
+
+Expensive eigendecomposition
+
+Sensitive hyperparameters
+
+Ricci flow stability issues
+
+Long runtime on full dataset
+
+
+Fast compressed versions often lose too much geometric information and therefore underperform.
+
+
+---
+
+8. Conclusion
+
+The RWC–GWL framework represents a geometry-first approach to machine learning classification. Instead of learning only decision boundaries, the system learns the shape of the data manifold and classifies samples based on wave resonance within that geometry.
+
+The final system combines:
+
+Graph Laplacian geometry
+
+Class potentials
+
+Ricci flow
+
+HRF kernel
+
+Polychromatic ensemble
+
+
+The best achieved result is 93.27% accuracy, showing that the approach is both mathematically unique and empirically strong.
+
+
+---
+
+9. Future Direction
+
+The most promising future improvements are likely to come from:
+
+Better manifold compression instead of full graph computation
+
+Residual correction for hard samples
+
+Improved class-conditional geometry
+
+Hybrid ensemble of RWC and GWL variants
+
+Decision threshold optimization
+
+
+The long-term goal is to push the framework beyond the current performance while preserving its geometric foundation.
+
+
+---
+
+End of White Paper
