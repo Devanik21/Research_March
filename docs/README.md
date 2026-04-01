@@ -5,13 +5,13 @@
   <img src="https://img.shields.io/badge/Accelerator-NVIDIA_T4_GPU-76b900?style=flat-square&logo=nvidia&logoColor=white"/>
   <img src="https://img.shields.io/badge/Framework-CuPy_%7C_cuML-FF6F00?style=flat-square"/>
   <img src="https://img.shields.io/badge/Dataset-EEG_Eye_State_(OpenML_1471)-6d28d9?style=flat-square"/>
-  <img src="https://img.shields.io/badge/Peak_Accuracy-93.46%25_(V14)-FFD700?style=flat-square"/>
+  <img src="https://img.shields.io/badge/Peak_Accuracy-93.46%25_(GWL_V13)-FFD700?style=flat-square"/>
   <img src="https://img.shields.io/badge/Versions-V1_%E2%86%92_V14_(14_Milestones)-fbbf24?style=flat-square"/>
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square"/>
   <img src="https://img.shields.io/badge/Authors-Devanik_Debnath_%7C_Xylia-black?style=flat-square&logo=github"/>
 </p>
 
-> *Two novel GPU-accelerated classifiers — RWC and GWL — that treat machine learning as a problem of wave physics on a Riemannian manifold. Classification is performed not by learning a decision boundary, but by measuring quantum-mechanical resonance energies on a continuously evolving geometric surface sculpted by discrete Ricci flow. Across 14 iterative milestones, five distinct architectural generations are explored — culminating in the **V14 Dynamic Adaptive Manifold (93.46% accuracy)** — a +25.99 percentage-point absolute gain from the 67.46% baseline, all on a single NVIDIA T4 GPU.*
+> *Two novel GPU-accelerated classifiers — RWC and GWL — that treat machine learning as a problem of wave physics on a Riemannian manifold. Classification is performed not by learning a decision boundary, but by measuring quantum-mechanical resonance energies on a continuously evolving geometric surface sculpted by discrete Ricci flow. Across 14 iterative milestones, five distinct architectural generations are explored — with the **GWL Polychromatic Forest (V13, 93.46% accuracy)** representing the project's accuracy peak, and the V14 generation (SCWH, AQGL, MFT-HRF) constituting a parallel architectural exploration — a +25.99 percentage-point absolute gain from the 67.46% baseline, all on a single NVIDIA T4 GPU.*
 
 ---
 
@@ -69,7 +69,7 @@ The project then explores five architectural generations beyond this foundation:
 - **V13.C MFT-HRF** — Multi-Frequency Tensor HRF with a fully vectorized 50-frequency GPU tensor
 - **V14 Dynamic Adaptive Manifold** — the final architecture unifying sparse eigensolver, temporal splicing, phase holography, asymmetric gravity warping, extreme spectral gating, and dual-axis polychromatic forests into three distinct classifiers (SCWH, AQGL, MFTHRF) under a generic `PolychromaticForest` wrapper
 
-Evaluated on the EEG Eye State dataset (OpenML ID 1471, N = 14,980), the final V14 Dynamic Adaptive Manifold achieves **93.46% test accuracy** — rising from a 67.46% baseline, a **+25.99 percentage-point absolute gain** across 14 documented milestones.
+Evaluated on the EEG Eye State dataset (OpenML ID 1471, N = 14,980), the **GWL Polychromatic Forest (V13)** achieves **93.46% test accuracy** — rising from a 67.46% baseline, a **+25.99 percentage-point absolute gain** across 14 documented milestones. The V14 generation (SCWH: 93.02%, AQGL: 92.52%, MFT-HRF: 92.96%) constitutes a parallel architectural exploration introducing sparse eigensolvers, temporal phase coupling, asymmetric gravity warping, and multi-frequency HRF tensors.
 
 ---
 
@@ -506,7 +506,7 @@ The sub-Gaussian `d^2.5` exponent provides broader support than a standard Gauss
 
 **Changes:** HRF exponent corrected `d^2.5 → d^2`. Fusion weight `1.5 → 2.0`. Query k `8 → 5`. `hrf_freq` and `hrf_gamma` promoted to constructor arguments. `BaggingClassifier` replaced by custom polychromatic loop sweeping `freq_spectrum = linspace(8, 50, n_est)`, `gamma_spectrum = linspace(0.2, 15, n_est)`, `k_spectrum = linspace(12, 28, n_est)`. Each tree receives a unique spectral color `(omega_t, gamma_t, k_t)`. Explicit VRAM reclaim between trees.
 
-**Results:** RWC: **93.00%** | GWL: **93.27%**
+**Results:** RWC: **92.66%** | GWL: **93.46%** ← *Project accuracy peak*
 
 This is the polychromatic principle: spectral filter diversity (not merely bootstrap diversity) produces decorrelated tree predictions that aggregate into a robust consensus.
 
@@ -594,7 +594,9 @@ The final version unifies all preceding innovations into three production-grade 
 
 **`PolychromaticForest`:** Generic wrapper with dual-axis sampling (rows + features) and dynamic per-tree spectral parameter injection. Sweeps `k_train in [12, 28]`, `freq in [8, 50]`, `gamma in [0.2, 15]`.
 
-**Results:** SCWH-Forest: **93.02%** | AQGL-Forest: **92.52%** | MFT-HRF-Forest: **92.96%** | **V14 (combined): 93.46%**
+**Results:** SCWH-Forest: **93.02%** | AQGL-Forest: **92.52%** | MFT-HRF-Forest: **92.96%**
+
+Note: V14 architectures represent a parallel exploration of sparse, temporal, and gravity-warped manifold designs. They do not surpass the V13 GWL Polychromatic Forest's accuracy peak of 93.46%.
 
 ---
 
@@ -617,26 +619,27 @@ The final version unifies all preceding innovations into three production-grade 
 | **V13.A** | SCWH Forest | Non-Monotonic Spectral Gating + Polychromatic | 93.02% |
 | **V13.B** | AQGL Forest | Asymmetric Gravity Warping + Temporal Coupling | 92.52% |
 | **V13.C** | MFT-HRF | Multi-Frequency Tensor, 50-freq vectorized HRF | 92.96% |
-| **V14** | Dynamic Adaptive | Sparse eigensolver, Phase Holography, AQGL gravity | **93.46%** |
+| **V13** | GWL Polychromatic Forest | d² HRF, fusion 2.0, k_q=5, spectrum sweep k∈[12,28] | **93.46%** |
+| **V13** | RWC Polychromatic Forest | Same spectrum sweep, static manifold (no Ricci) | 92.66% |
+| **V14** | SCWH/AQGL/MFT-HRF (parallel) | Sparse eigsh, temporal splicing, gravity warp | 93.02% (best) |
 
 ### Cumulative Gain Summary
 
 | Metric | Value |
 |--------|-------|
-| Absolute gain: baseline → V14 | **+25.99 pp** (67.46% → 93.46%) |
-| Absolute gain: baseline → V13 polychromatic | +25.81 pp (67.46% → 93.27%) |
+| Absolute gain: baseline → GWL V13 polychromatic | **+25.99 pp** (67.46% → 93.46%) |
+| Absolute gain: baseline → RWC V13 polychromatic | +25.20 pp (67.46% → 92.66%) |
 | Largest single-step gain | V1→V2 GWL: +22.09 pp (energy function fix) |
 | HRF contribution (V4→V5, GWL) | +2.30 pp |
-| V13 polychromatic over V5 GWL | +0.64 pp |
-| V14 over V13 GWL polychromatic | +0.19 pp |
-| Final V14 margin over V13.C MFT-HRF | +0.50 pp |
+| V13 polychromatic over V5 GWL | +0.83 pp (92.63% → 93.46%) |
+| V14 best (SCWH 93.02%) vs V13 GWL peak | −0.44 pp (V14 did not surpass V13 GWL) |
 
 ### Benchmark Chart Color Tiers
 
 | Tier | Threshold | Models |
 |------|-----------|--------|
-| Gold — Project Peak | >= 93.00% | V14 (93.46%), V13.A SCWH (93.02%), V13 GWL (93.27%), V13 RWC (93.00%) |
-| Orange — Excellent | >= 92.00% | V13.B AQGL (92.52%), V13.C MFT-HRF (92.96%), V5.2 GWL (92.63%) |
+| Gold — Project Peak | >= 93.00% | **GWL V13 Polychromatic (93.46%)**, V13.A SCWH (93.02%), RWC V13 (92.66%→ near gold) |
+| Orange — Excellent | >= 92.00% | RWC V13 Polychromatic (92.66%), V13.B AQGL (92.52%), V13.C MFT-HRF (92.96%), V5.2 GWL (92.63%) |
 | Cyan — Very Good | >= 90.00% | V5.1 RWC (91.40%), V3.2 GWL (90.33%), V4.2 GWL (90.33%) |
 | Blue — Research | < 90.00% | V1–V2 versions |
 
