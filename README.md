@@ -20,11 +20,18 @@
 
 ---
 
-# The Benchmark
+# The Benchmarks
+
+*Version 1*
 
 <img width="1667" height="1067" alt="image" src="https://github.com/user-attachments/assets/ab0acef9-6955-477f-b115-4fb57ed1b305" />
 
+---
 
+*Version 2*
+<img width="2085" height="1385" alt="image" src="https://github.com/user-attachments/assets/8197cede-faa9-4682-8f49-3af401e07cab" />
+
+---
 ## Table of Contents
 
 1. [Abstract](#abstract)
