@@ -59,13 +59,13 @@ class BioHyperAgent:
 
     # ── Life constants ───────────────────────────────────────────────────────
     MAX_AGE           = 480
-    BASE_METABOLISM   = 0.07
-    MOVE_COST         = 0.04
-    ATTACK_COST       = 0.18
+    BASE_METABOLISM   = 0.035
+    MOVE_COST         = 0.015
+    ATTACK_COST       = 0.10
     REPRODUCE_COST    = 1.6
     INVENT_COST       = 0.85
     BUILD_COST        = 0.90
-    COMMUNICATE_COST  = 0.03
+    COMMUNICATE_COST  = 0.015
     META_INVENT_COST  = 1.2     # Higher cost — meta-invention is demanding
     COMPOSE_COST      = 0.50
 

@@ -130,7 +130,7 @@ class World:
         self.step_count += 1
 
         # Slow regeneration (exponential, capped)
-        regen = self.rng.exponential(0.0018, self.resources.shape).astype(np.float32)
+        regen = self.rng.exponential(0.006, self.resources.shape).astype(np.float32)
         self.resources += regen
         self.resources  = np.clip(self.resources, 0.0, 8.0)
 

@@ -209,12 +209,14 @@ class HarmonicResonanceConsciousness:
         """
         ctx = self._encode(sensory)
 
-        # Action basis: one eigenvector per action, context-phase-shifted
+        # Action basis: one eigenvector per action, context-phase-shifted element-wise
         basis = np.empty((N_ACTIONS, K_DIM), dtype=complex)
+        ctx_phases = np.angle(ctx)
         for i in range(N_ACTIONS):
             v  = self._evecs[:, i % K_DIM].copy()
-            ph = float(np.angle(ctx[i % len(ctx)]))
-            v *= np.exp(1j * ph)
+            # Element-wise phase shift using a rolled context phase pattern
+            ph_shift = np.roll(ctx_phases, i)
+            v *= np.exp(1j * ph_shift)
             nv = np.linalg.norm(v)
             basis[i] = v / nv if nv > 1e-12 else v
 
