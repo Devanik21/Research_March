@@ -503,11 +503,12 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
 # TAB 2  ─  AGENTS
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🧬 AGENTS":
-with tabs[1]:
-    st.markdown(
-        "<div class='section-title'>BioHyperAgent Census · Live Population</div>",
-        unsafe_allow_html=True
-    )
+
+    with tabs[1]:
+        st.markdown(
+            "<div class='section-title'>BioHyperAgent Census · Live Population</div>",
+            unsafe_allow_html=True
+        )
 
     if not alive_agents:
         st.warning("No agents alive.")
@@ -622,15 +623,15 @@ with tabs[1]:
 # TAB 3  ─  CIVILIZATION
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🏛 CIVILIZATION":
-with tabs[2]:
-    civ_left, civ_right = st.columns([1.6, 1])
+    with tabs[2]:
+        civ_left, civ_right = st.columns([1.6, 1])
 
-    with civ_left:
-        st.markdown("<div class='section-title'>Tribe Leaderboard</div>", unsafe_allow_html=True)
-        # C.tribe_leaderboard() → List[dict]: id, members, power, disc, wars, allies, color
-        lb = C.tribe_leaderboard()
+        with civ_left:
+            st.markdown("<div class='section-title'>Tribe Leaderboard</div>", unsafe_allow_html=True)
+            # C.tribe_leaderboard() → List[dict]: id, members, power, disc, wars, allies, color
+            lb = C.tribe_leaderboard()
 
-        if lb:
+            if lb:
             tribe_ids    = [r['id']    for r in lb[:16]]
             tribe_powers = [r['power'] for r in lb[:16]]
             tribe_colors = [r['color'] for r in lb[:16]]
@@ -741,15 +742,15 @@ with tabs[2]:
 # TAB 4  ─  TECH TREE
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "💡 TECH TREE":
-with tabs[3]:
-    tech = C.tech   # TechTree: .nodes dict, .edges list[tuple], .global_bonus, .summary_by_category()
+    with tabs[3]:
+        tech = C.tech   # TechTree: .nodes dict, .edges list[tuple], .global_bonus, .summary_by_category()
 
-    tt_left, tt_right = st.columns([1.6, 1])
+        tt_left, tt_right = st.columns([1.6, 1])
 
-    with tt_left:
-        st.markdown(
-            f"<div class='section-title'>"
-            f"Technology Graph · {len(tech.nodes)} nodes · bonus {tech.global_bonus:.4f}×"
+        with tt_left:
+            st.markdown(
+                f"<div class='section-title'>"
+                f"Technology Graph · {len(tech.nodes)} nodes · bonus {tech.global_bonus:.4f}×"
             f"</div>",
             unsafe_allow_html=True
         )
@@ -863,13 +864,13 @@ with tabs[3]:
 # TAB 5  ─  ANALYTICS
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "📊 ANALYTICS":
-with tabs[4]:
-    st.markdown(
-        "<div class='section-title'>Population & Civilization Analytics</div>",
-        unsafe_allow_html=True
-    )
+    with tabs[4]:
+        st.markdown(
+            "<div class='section-title'>Population & Civilization Analytics</div>",
+            unsafe_allow_html=True
+        )
 
-    pop_h = estats.get('pop_history', [])
+        pop_h = estats.get('pop_history', [])
     eng_h = estats.get('energy_history', [])
     inv_h = estats.get('inv_history', [])
 
@@ -996,13 +997,13 @@ with tabs[4]:
 # TAB 6  ─  HRC BRAIN INSPECTOR
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🔬 HRC BRAIN":
-with tabs[5]:
-    st.markdown(
-        "<div class='section-title'>"
-        "Harmonic Resonance Consciousness · Deep Brain Inspector"
-        "</div>",
-        unsafe_allow_html=True
-    )
+    with tabs[5]:
+        st.markdown(
+            "<div class='section-title'>"
+            "Harmonic Resonance Consciousness · Deep Brain Inspector"
+            "</div>",
+            unsafe_allow_html=True
+        )
     st.markdown(
         "<div style='color:#223;font-size:0.76em;font-family:monospace;padding-bottom:8px'>"
         "ψ ∈ ℂᴷ wave function · Hermitian Hamiltonian H · Schrödinger evolution "
@@ -1286,13 +1287,13 @@ with tabs[5]:
 # TAB 7  ─  EVENTS FEED
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "📡 EVENTS FEED":
-with tabs[6]:
-    ev_l, ev_r = st.columns(2)
+    with tabs[6]:
+        ev_l, ev_r = st.columns(2)
 
-    with ev_l:
-        st.markdown(
-            "<div class='section-title'>Civilization Events (latest 40)</div>",
-            unsafe_allow_html=True
+        with ev_l:
+            st.markdown(
+                "<div class='section-title'>Civilization Events (latest 40)</div>",
+                unsafe_allow_html=True
         )
         # C.get_recent_events(n) → List[dict]: step, type, desc
         for evt in reversed(C.get_recent_events(40)):
@@ -1352,13 +1353,13 @@ with tabs[6]:
 # TAB 8  ─  RESOURCES
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🗺 RESOURCES":
-with tabs[7]:
-    st.markdown(
-        "<div class='section-title'>Resource Field · Per-Layer Analysis</div>",
-        unsafe_allow_html=True
-    )
+    with tabs[7]:
+        st.markdown(
+            "<div class='section-title'>Resource Field · Per-Layer Analysis</div>",
+            unsafe_allow_html=True
+        )
 
-    # 4 resource heatmaps — W.resources[x, y, r_idx] for r_idx in 0..3
+        # 4 resource heatmaps — W.resources[x, y, r_idx] for r_idx in 0..3
     r_cols = st.columns(4)
     # RGBA strings for midpoint at 0.27 alpha (approx 0x44)
     r_lows = [
@@ -1465,13 +1466,13 @@ with tabs[7]:
 # TAB 9  ─  META-MIND (NEW)
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🧠 META-MIND":
-with tabs[8]:
-    st.markdown(
-        "<div class='section-title'>🧠 Metacognitive Landscape · Self-Modifying Intelligence</div>",
-        unsafe_allow_html=True
-    )
-    if not alive_agents:
-        st.warning("No agents alive.")
+    with tabs[8]:
+        st.markdown(
+            "<div class='section-title'>🧠 Metacognitive Landscape · Self-Modifying Intelligence</div>",
+            unsafe_allow_html=True
+        )
+        if not alive_agents:
+            st.warning("No agents alive.")
     else:
         mm1, mm2 = st.columns(2)
 
@@ -1623,16 +1624,16 @@ with tabs[8]:
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🔬 KNOWLEDGE":
     
-with tabs[9]:
-    st.markdown(
-        "<div class='section-title'>🔬 Knowledge Physics · Ambient Intelligence Field</div>",
-        unsafe_allow_html=True
-    )
+    with tabs[9]:
+        st.markdown(
+            "<div class='section-title'>🔬 Knowledge Physics · Ambient Intelligence Field</div>",
+            unsafe_allow_html=True
+        )
 
-    kp1, kp2 = st.columns(2)
+        kp1, kp2 = st.columns(2)
 
-    # ── Knowledge Field Heatmap ───────────────────────────────────────────────
-    with kp1:
+        # ── Knowledge Field Heatmap ───────────────────────────────────────────────
+        with kp1:
         st.markdown("<div class='section-title'>Knowledge Field Heatmap (diffusing)</div>",
                     unsafe_allow_html=True)
         kf = W.knowledge_field_heatmap()
