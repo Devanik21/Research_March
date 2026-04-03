@@ -347,7 +347,7 @@ st.divider()
 # TAB 1  ─  WORLD MAP
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.active_tab == "🌍 WORLD MAP":
-with tabs[0]:
+    with tabs[0]:
     map_col, info_col = st.columns([2.8, 1])
 
     with map_col:
@@ -494,6 +494,7 @@ with tabs[0]:
             ) + "</div>",
             unsafe_allow_html=True
         )
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1618,6 +1619,11 @@ with tabs[8]:
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 10  ─  KNOWLEDGE PHYSICS (NEW)
 # ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 10  ─  KNOWLEDGE PHYSICS (NEW)
+# ══════════════════════════════════════════════════════════════════════════════
+elif st.session_state.active_tab == "🔬 KNOWLEDGE":
+
 with tabs[9]:
     st.markdown(
         "<div class='section-title'>🔬 Knowledge Physics · Ambient Intelligence Field</div>",
