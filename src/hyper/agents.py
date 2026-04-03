@@ -1,19 +1,21 @@
 """
-agents.py — BioHyperAgent
-==========================
-A truly bio-inspired living organism.
+agents.py — BioHyperAgent v2.0
+================================
+A truly bio-inspired living organism with METACOGNITIVE self-modification.
 
 SOUL    : Immutable spectral frequency signature  (eigenfrequency identity)
-BRAIN   : HarmonicResonanceConsciousness          (wave-based cognition)
+BRAIN   : HarmonicResonanceConsciousness v2.0     (wave-based cognition + meta-layer)
+META    : MetaConsciousness                        (self-modifying learning rules)
 BODY    : Physical presence, energy metabolism, health, aging
 WILL    : Autonomous action selection — no external task, no reward shaping
 DEATH   : Finite lifespan; leaves legacy artifact
 
-Actions available: move (8 dirs), eat, attack, communicate, reproduce,
-                   invent, rest, build_artifact, absorb_artifact.
+Actions:
+  Base: move (8 dirs), eat, attack, communicate, reproduce,
+        invent, rest, build_artifact, absorb_artifact
+  New:  meta_invent, compose_action
 
-All 128 agents are seeded with distinct soul frequencies → genuinely
-diverse personalities emerging from spectral identity differences.
+Population: 96 agents (down from 128 for K_DIM=32 performance).
 
 Invented by Devanik & Claude (Xylia) — Event Horizon Project
 """
@@ -22,14 +24,24 @@ import numpy as np
 import uuid
 from typing import Optional, List, Dict, Tuple
 
+from metacognition import (
+    K_DIM, K_TASK, K_META,
+    MetaConsciousness, GodelEncoder, GODEL,
+    ALL_PRIMITIVES, PRIM_CATEGORY,
+)
 from consciousness import (
     HarmonicResonanceConsciousness, CognitionMode,
-    ACTIONS, K_DIM, E
+    ACTIONS, N_ACTIONS, E,
 )
 
 # ── Physics constants ────────────────────────────────────────────────────────
-_BASE_FREQS = np.array([1.0, 2.0, 3.0, 5.0, 7.0, 11.0,
-                         13.0, 17.0, 19.0, 23.0, 29.0, 31.0])  # first 12 primes
+# Expanded to K_DIM=32 primes for soul frequency base
+_BASE_FREQS = np.array([
+    1.0,  2.0,  3.0,  5.0,  7.0,  11.0,  13.0,  17.0,
+    19.0, 23.0, 29.0, 31.0, 37.0, 41.0,  43.0,  47.0,
+    53.0, 59.0, 61.0, 67.0, 71.0, 73.0,  79.0,  83.0,
+    89.0, 97.0, 101.0,103.0,107.0,109.0, 113.0, 127.0,
+])  # first 32 primes
 
 
 class BioHyperAgent:
@@ -42,17 +54,20 @@ class BioHyperAgent:
     Social dynamics emerge from resonance coupling between agents.
     Technology propagates via artifact placement and absorption.
     Civilisations form when resonance-compatible agents cluster.
+    Meta-learning evolves through inheritance and self-modification.
     """
 
     # ── Life constants ───────────────────────────────────────────────────────
     MAX_AGE           = 480
-    BASE_METABOLISM   = 0.07    # energy/tick
+    BASE_METABOLISM   = 0.07
     MOVE_COST         = 0.04
     ATTACK_COST       = 0.18
     REPRODUCE_COST    = 1.6
     INVENT_COST       = 0.85
     BUILD_COST        = 0.90
     COMMUNICATE_COST  = 0.03
+    META_INVENT_COST  = 1.2     # Higher cost — meta-invention is demanding
+    COMPOSE_COST      = 0.50
 
     def __init__(
         self,
@@ -70,15 +85,20 @@ class BioHyperAgent:
         self.world_size   = world_size
         self.parent_ids   = parent_ids or []
         self.generation   = generation
-        self.rng          = np.random.RandomState((seed or np.random.randint(0, 2**30)) % (2**31))
+        self.rng          = np.random.RandomState(
+            (seed or np.random.randint(0, 2**30)) % (2**31)
+        )
 
         # ── Soul (immutable) ─────────────────────────────────────────────
         self.soul_freqs = self._forge_soul()
 
-        # ── Brain ────────────────────────────────────────────────────────
+        # ── Brain (includes meta-consciousness) ──────────────────────────
         self.brain = HarmonicResonanceConsciousness(
             self.soul_freqs, seed=self.rng.randint(0, 2**31)
         )
+
+        # ── Shortcut to meta layer ───────────────────────────────────────
+        self.meta = self.brain.meta
 
         # ── Body ─────────────────────────────────────────────────────────
         self.energy   = 4.5
@@ -106,8 +126,7 @@ class BioHyperAgent:
     def _forge_soul(self) -> np.ndarray:
         """
         Soul = unique combination of prime-harmonic base frequencies
-        modulated by random phases and amplitudes.
-        Every agent has a truly unique spectral fingerprint.
+        modulated by random phases and amplitudes (K_DIM=32).
         """
         phases     = self.rng.uniform(0, 2 * np.pi, K_DIM)
         amplitudes = self.rng.exponential(1.0, K_DIM) + 0.1
@@ -118,7 +137,7 @@ class BioHyperAgent:
     def sense(self, world) -> np.ndarray:
         """
         Build sensory observation vector:
-        local resource gradients + own state + social density.
+        local resource gradients + knowledge field + own state + social density.
         """
         obs = []
 
@@ -142,6 +161,13 @@ class BioHyperAgent:
         nearby_count = len(world.get_agents_near(self.x, self.y, radius=5))
         obs.append(nearby_count / 15.0)
 
+        # Knowledge field intensity at current position
+        kf_val = world.get_knowledge_field(self.x, self.y)
+        obs.append(kf_val)
+
+        # Meta-cognitive eigenspread (self-awareness signal)
+        obs.append(self.meta.eigenspread() / 5.0)
+
         return np.array(obs, dtype=float)
 
     # ── Main step ────────────────────────────────────────────────────────────
@@ -161,7 +187,7 @@ class BioHyperAgent:
         # Sensory input
         sensory = self.sense(world)
 
-        # Decide (Born-rule quantum decision)
+        # Decide (Born-rule quantum decision, meta-modulated)
         action, confidence = self.brain.decide(sensory)
 
         # Cognitive-mode bias (40% chance to override toward dominant mode)
@@ -170,7 +196,7 @@ class BioHyperAgent:
         # Execute and collect reward
         reward, child = self._execute(action, world, all_agents)
 
-        # Learn from outcome
+        # Learn from outcome (meta-modulated)
         self.brain.learn(reward)
         self.brain.evolve()
 
@@ -193,10 +219,11 @@ class BioHyperAgent:
                                         "move_NE","move_NW","move_SE","move_SW"],
             CognitionMode.SURVIVE   : ["eat","rest"],
             CognitionMode.SOCIALIZE : ["communicate","rest"],
-            CognitionMode.INVENT    : ["invent","absorb_artifact","rest"],
+            CognitionMode.INVENT    : ["invent","absorb_artifact","meta_invent",
+                                        "compose_action"],
             CognitionMode.REPRODUCE : ["reproduce","communicate"],
             CognitionMode.DOMINATE  : ["attack","move_N","move_S","move_E","move_W"],
-            CognitionMode.MEDITATE  : ["rest","invent"],
+            CognitionMode.MEDITATE  : ["rest","meta_invent","compose_action"],
         }
         mode    = self.brain.get_dominant_mode()
         options = BIAS.get(mode, [])
@@ -219,6 +246,8 @@ class BioHyperAgent:
             elif action == "rest":             reward = self._rest()
             elif action == "build_artifact":   reward = self._build_artifact(world)
             elif action == "absorb_artifact":  reward = self._absorb_artifact(world)
+            elif action == "meta_invent":      reward = self._meta_invent(world)
+            elif action == "compose_action":   reward = self._compose_action(world)
             else:                              reward = 0.0
         except Exception:
             reward = -0.05
@@ -237,13 +266,14 @@ class BioHyperAgent:
         self.y   = (self.y + dy) % self.world_size
         self.energy -= self.MOVE_COST
         local_res    = float(world.resources[self.x, self.y].sum())
-        # Artifact bonus (knowledge-seekers gravitate toward artifacts)
         art_bonus = 0.1 if world.get_artifact(self.x, self.y) else 0.0
-        return local_res * 0.04 - 0.01 + art_bonus
+        # Knowledge field bonus — drawn to high-knowledge areas
+        kf_bonus = world.get_knowledge_field(self.x, self.y) * 0.05
+        return local_res * 0.04 - 0.01 + art_bonus + kf_bonus
 
     def _eat(self, world) -> float:
         eaten = 0.0
-        for r_type in range(2):   # food=0, energy_crystal=1
+        for r_type in range(2):
             consumed = world.consume_resource(self.x, self.y, r_type, 0.55)
             eaten   += consumed
         gain        = eaten * 0.85
@@ -286,7 +316,6 @@ class BioHyperAgent:
             return -0.02
         self.energy -= self.COMMUNICATE_COST
 
-        # Find most resonant partner
         partner  = max(nearby[:8], key=lambda a: self.brain.resonate(a.brain))
         coupling = self.brain.resonate(partner.brain)
 
@@ -304,8 +333,8 @@ class BioHyperAgent:
                 )
 
         if coupling > 0.45:
-            self.reputation      += 0.08
-            partner.reputation   += 0.08
+            self.reputation    += 0.08
+            partner.reputation += 0.08
 
         return coupling * 0.28 - 0.02
 
@@ -324,8 +353,8 @@ class BioHyperAgent:
         if coupling < 0.08:
             return -0.04, None
 
-        self.energy      -= self.REPRODUCE_COST
-        partner.energy   -= self.REPRODUCE_COST * 0.45
+        self.energy    -= self.REPRODUCE_COST
+        partner.energy -= self.REPRODUCE_COST * 0.45
 
         child_H, child_soul = self.brain.spawn_child_H(partner.brain)
 
@@ -345,14 +374,24 @@ class BioHyperAgent:
         )
         child.brain.H    = child_H
         child.brain._recache()
-        child.energy     = 2.2
+
+        # ── Partial meta-H inheritance (60/40) ────────────────────────────
+        child_meta_H, child_lr = MetaConsciousness.spawn_child_meta(
+            self.meta, partner.meta, self.rng
+        )
+        child.brain.meta.meta_H   = child_meta_H
+        child.brain.meta.lr_field = child_lr
+        child.brain.meta._recache_meta()
+        child.meta = child.brain.meta
+
+        child.energy = 2.2
 
         # Inherit up to 2 discoveries
         for name, disc in list(self.brain.discoveries.items())[:2]:
             child.brain.discoveries[name] = disc
             child.absorbed_inventions.append(name)
 
-        self.n_children  += 1
+        self.n_children += 1
         self.brain.emotions[E.JOY] = min(1.0, self.brain.emotions[E.JOY] + 0.28)
         return coupling * 0.45, child
 
@@ -368,13 +407,15 @@ class BioHyperAgent:
             'creator'  : self.id,
             'step'     : world.step_count,
         })
+        # Boost knowledge field at this location
+        world.boost_knowledge_field(self.x, self.y, 0.5)
         return 0.85
 
     def _rest(self) -> float:
         gain        = 0.22
         self.energy = min(10.0, self.energy + gain)
         self.health = min(1.0,  self.health + 0.018)
-        self.brain.emotions *= 0.97   # calm down
+        self.brain.emotions *= 0.97
         return 0.04
 
     def _build_artifact(self, world) -> float:
@@ -392,7 +433,10 @@ class BioHyperAgent:
             'creator'   : self.id,
             'step'      : world.step_count,
             'signature' : float(consumed * 1000),
+            'godel'     : GODEL.encode(['focus', 'store']),
+            'program'   : ['focus', 'store'],
             'wonder'    : 0.0,
+            'diversity' : 0.25,
         })
         self.tools.append(name)
         return 0.30
@@ -407,6 +451,42 @@ class BioHyperAgent:
             self.brain.emotions[E.CURIOSITY] = min(1.0, self.brain.emotions[E.CURIOSITY] + 0.05)
             return 0.42
         return 0.01
+
+    # ── NEW: Meta-invent ─────────────────────────────────────────────────────
+
+    def _meta_invent(self, world) -> float:
+        """Attempt to evolve own learning algorithm (meta-H mutation)."""
+        if self.energy < self.META_INVENT_COST:
+            return -0.10
+        self.energy -= self.META_INVENT_COST
+        result = self.brain.attempt_meta_invention()
+        if result is None:
+            return -0.15
+        # Meta-invention boosts knowledge field too
+        world.boost_knowledge_field(self.x, self.y, 0.8)
+        return 0.95
+
+    # ── NEW: Compose action ──────────────────────────────────────────────────
+
+    def _compose_action(self, world) -> float:
+        """Compose a new compound action from the Primitive Action Algebra."""
+        if self.energy < self.COMPOSE_COST:
+            return -0.05
+        self.energy -= self.COMPOSE_COST
+        result = self.brain.compose_new_action()
+        if result is None:
+            return -0.08
+        # Store as a behavioral artifact in the world
+        world.place_artifact(self.x, self.y, {
+            **result,
+            'type'      : 'ideology',
+            'creator'   : self.id,
+            'step'      : world.step_count,
+            'signature' : float(result['godel']),
+            'wonder'    : float(self.brain.emotions[E.WONDER]),
+        })
+        world.boost_knowledge_field(self.x, self.y, 0.3)
+        return 0.50
 
     # ── Death ────────────────────────────────────────────────────────────────
 
@@ -449,4 +529,7 @@ class BioHyperAgent:
             'curiosity'   : round(float(self.brain.emotions[E.CURIOSITY]), 2),
             'wonder'      : round(float(self.brain.emotions[E.WONDER]), 2),
             'fear'        : round(float(self.brain.emotions[E.FEAR]), 2),
+            'meta_eigenspread': round(float(self.meta.eigenspread()), 3),
+            'meta_inventions' : self.meta.n_meta_inventions,
+            'composed_actions': len(self.brain.composed_actions),
         }
