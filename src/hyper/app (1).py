@@ -1069,7 +1069,7 @@ with tabs[5]:
                     mode='markers+lines',
                     marker=dict(color='#FF69B4', size=7,
                                 line=dict(color='#04040e',width=1)),
-                    line=dict(color='#FF69B466', width=1.5, dash='dot'),
+                    line=dict(color='rgba(255, 105, 180, 0.4)', width=1.5, dash='dot'),
                 ))
                 fig_soul.add_hline(y=0, line=dict(color='#226',width=1))
                 fig_soul.update_layout(
@@ -1194,7 +1194,7 @@ with tabs[5]:
                     total_a = sum(ac.values())
                     fig_ac  = go.Figure(go.Bar(
                         x=list(ac.keys()), y=list(ac.values()),
-                        marker=dict(color='#7DF9FF88', line=dict(width=0)),
+                        marker=dict(color='rgba(125, 249, 255, 0.53)', line=dict(width=0)),
                         text=[f"{v/total_a:.0%}" for v in ac.values()],
                         textposition='outside',
                         textfont=dict(size=7, color='#556'),
