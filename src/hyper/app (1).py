@@ -1321,9 +1321,14 @@ with tabs[7]:
 
     # 4 resource heatmaps — W.resources[x, y, r_idx] for r_idx in 0..3
     r_cols = st.columns(4)
-    for r_idx, (rcol, rname, rcol_str) in enumerate(zip(r_cols, R_NAMES, R_COLORS)):
+    # RGBA strings for midpoint at 0.27 alpha (approx 0x44)
+    r_lows = [
+        'rgba(68, 255, 136, 0.27)', 'rgba(255, 215, 0, 0.27)', 
+        'rgba(221, 160, 221, 0.27)', 'rgba(255, 140, 0, 0.27)'
+    ]
+    for r_idx, (rcol, rname, rcol_str, r_low) in enumerate(zip(r_cols, R_NAMES, R_COLORS, r_lows)):
         layer = W.resources[:, :, r_idx]   # ndarray (size, size)
-        cs_r  = [[0,'#04040e'],[0.4,rcol_str+'44'],[1.0,rcol_str]]
+        cs_r  = [[0,'#04040e'],[0.4, r_low],[1.0, rcol_str]]
         fig_r = go.Figure(go.Heatmap(
             z=layer.T, colorscale=cs_r, showscale=False,
             hovertemplate=f'{rname}<br>(%{{x}},%{{y}}) = %{{z:.2f}}<extra></extra>',
