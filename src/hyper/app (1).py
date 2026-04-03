@@ -452,7 +452,7 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
                 height=110, margin=dict(l=30,r=30,t=4,b=0),
                 xaxis=dict(showgrid=False, showticklabels=False, color='#223'),
                 yaxis=dict(gridcolor='#0d0d1e', color='#446', title='Pop'),
-                yaxis2=dict(color='#FFD70066', title='Energy'),
+                yaxis2=dict(color='rgba(255, 215, 0, 0.4)', title='Energy'),
                 legend=dict(font=dict(size=8,color='#445'), x=0.01, y=0.99,
                             bgcolor='rgba(0,0,0,0)'),
                 font=dict(color='#334', size=9),
