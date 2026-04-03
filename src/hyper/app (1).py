@@ -643,7 +643,7 @@ elif st.session_state.active_tab == "🏛 CIVILIZATION":
                 war_vals = [-r['wars'] * max(tribe_powers) * 0.06 for r in lb[:16]]
                 fig_tpow.add_trace(go.Bar(
                     x=tribe_ids, y=war_vals,
-                    marker=dict(color='#FF445566', line=dict(width=0)),
+                    marker=dict(color='rgba(255, 68, 85, 0.4)', line=dict(width=0)),
                     name='Wars (neg)', hoverinfo='skip',
                 ))
             fig_tpow.update_layout(
@@ -873,10 +873,15 @@ elif st.session_state.active_tab == "📊 ANALYTICS":
     def sparkline(col, data, title, color, key):
         if not data:
             return
+            
+        # Dynamically convert standard hex to a Plotly-safe rgba string with 0.07 opacity (equivalent to hex '11')
+        h = color.lstrip('#')
+        rgba_fill = f"rgba({int(h[0:2], 16)}, {int(h[2:4], 16)}, {int(h[4:6], 16)}, 0.07)"
+
         fig = go.Figure(go.Scatter(
             y=data, mode='lines',
             line=dict(color=color, width=2),
-            fill='tozeroy', fillcolor=f'{color}11',
+            fill='tozeroy', fillcolor=rgba_fill,
         ))
         fig.update_layout(
             paper_bgcolor='#04040e', plot_bgcolor='#04040e',
