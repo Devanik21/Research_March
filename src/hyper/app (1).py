@@ -1653,7 +1653,7 @@ with tabs[9]:
                 tm_spec = tribe.tribal_memory.spectral_summary()
                 st.markdown(
                     f"<div class='kpi-card'>"
-                    f"<span style='color:{tribe.color or \"#7DF9FF\"}'>{tid}</span>"
+                    f"<span style='color:{tribe.color or '#7DF9FF'}'>{tid}</span>"
                     f" — {tribe.tribal_memory.count} imprints"
                     f" — max eigenval: {tm_spec.max():.3f}"
                     f"</div>",
