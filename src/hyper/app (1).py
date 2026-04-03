@@ -348,13 +348,13 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.active_tab == "🌍 WORLD MAP":
     with tabs[0]:
-    map_col, info_col = st.columns([2.8, 1])
+        map_col, info_col = st.columns([2.8, 1])
 
-    with map_col:
-        st.markdown(
-            "<div class='section-title'>Live World · Toroidal Field · Agents + Artifacts</div>",
-            unsafe_allow_html=True
-        )
+        with map_col:
+            st.markdown(
+                "<div class='section-title'>Live World · Toroidal Field · Agents + Artifacts</div>",
+                unsafe_allow_html=True
+            )
 
         fig_map = go.Figure()
 
@@ -494,7 +494,6 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
             ) + "</div>",
             unsafe_allow_html=True
         )
-
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1623,7 +1622,7 @@ with tabs[8]:
 # TAB 10  ─  KNOWLEDGE PHYSICS (NEW)
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.active_tab == "🔬 KNOWLEDGE":
-
+    
 with tabs[9]:
     st.markdown(
         "<div class='section-title'>🔬 Knowledge Physics · Ambient Intelligence Field</div>",
