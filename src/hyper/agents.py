@@ -293,21 +293,21 @@ class BioHyperAgent:
         damage       = 0.13 + self.rng.random() * 0.09
 
         target.health -= damage
-        target.brain.emotions[E.FEAR]  = min(1.0, target.brain.emotions[E.FEAR]  + 0.35)
-        target.brain.emotions[E.ANGER] = min(1.0, target.brain.emotions[E.ANGER] + 0.20)
+        target.brain.emotions[E.FEAR]  = min(1.0, target.brain.emotions[E.FEAR]  + 0.45) # They just get scared, not angry
+        target.brain.emotions[E.ANGER] = min(1.0, target.brain.emotions[E.ANGER] + 0.05)
 
         if target.health <= 0:
             target.alive = False
             target.die(world)
             self.n_kills   += 1
-            self.reputation -= 1.2
-            loot = target.energy * 0.45
+            self.reputation -= 2.0 # Huge penalty
+            loot = target.energy * 0.20 # Less loot incentive
             self.energy = min(10.0, self.energy + loot)
-            self.brain.emotions[E.ANGER] = min(1.0, self.brain.emotions[E.ANGER] + 0.15)
-            return 0.55
+            # Removed anger spike so they don't get stuck in bloodlust mode
+            return 0.15 # Reduced reward from killing
 
-        self.reputation -= 0.25
-        return 0.05
+        self.reputation -= 0.50
+        return -0.05 # Attacking someone and failing to kill them should be negatively reinforced
 
     def _communicate(self, world, all_agents: Dict) -> float:
         nearby = [a for a in world.get_agents_near(self.x, self.y, radius=5)
@@ -329,14 +329,15 @@ class BioHyperAgent:
             if disc['name'] not in partner.absorbed_inventions:
                 partner.absorbed_inventions.append(disc['name'])
                 partner.brain.emotions[E.WONDER] = min(
-                    1.0, partner.brain.emotions[E.WONDER] + 0.06
+                    1.0, partner.brain.emotions[E.WONDER] + 0.15
                 )
+                self.brain.emotions[E.JOY] = min(1.0, self.brain.emotions[E.JOY] + 0.15)
 
-        if coupling > 0.45:
-            self.reputation    += 0.08
-            partner.reputation += 0.08
+        if coupling > 0.30:
+            self.reputation    += 0.15
+            partner.reputation += 0.15
 
-        return coupling * 0.28 - 0.02
+        return coupling * 0.50 + 0.10
 
     def _reproduce(self, world, all_agents: Dict
                    ) -> Tuple[float, Optional['BioHyperAgent']]:
@@ -350,8 +351,9 @@ class BioHyperAgent:
 
         partner  = max(nearby, key=lambda a: self.brain.resonate(a.brain))
         coupling = self.brain.resonate(partner.brain)
-        if coupling < 0.08:
-            return -0.04, None
+        # Very low threshold to make reproduction easy
+        if coupling < 0.02:
+            return -0.02, None
 
         self.energy    -= self.REPRODUCE_COST
         partner.energy -= self.REPRODUCE_COST * 0.45
@@ -392,8 +394,11 @@ class BioHyperAgent:
             child.absorbed_inventions.append(name)
 
         self.n_children += 1
-        self.brain.emotions[E.JOY] = min(1.0, self.brain.emotions[E.JOY] + 0.28)
-        return coupling * 0.45, child
+        self.brain.emotions[E.JOY] = min(1.0, self.brain.emotions[E.JOY] + 0.48)
+        self.brain.emotions[E.AFFECTION] = min(1.0, self.brain.emotions[E.AFFECTION] + 0.40)
+        partner.brain.emotions[E.JOY] = min(1.0, partner.brain.emotions[E.JOY] + 0.48)
+        partner.brain.emotions[E.AFFECTION] = min(1.0, partner.brain.emotions[E.AFFECTION] + 0.40)
+        return coupling * 0.85 + 0.20, child
 
     def _invent(self, world) -> float:
         if self.energy < self.INVENT_COST:
@@ -408,8 +413,9 @@ class BioHyperAgent:
             'step'     : world.step_count,
         })
         # Boost knowledge field at this location
-        world.boost_knowledge_field(self.x, self.y, 0.5)
-        return 0.85
+        world.boost_knowledge_field(self.x, self.y, 1.5)
+        self.brain.emotions[E.WONDER] = min(1.0, self.brain.emotions[E.WONDER] + 0.50)
+        return 1.45
 
     def _rest(self) -> float:
         gain        = 0.22
@@ -463,8 +469,9 @@ class BioHyperAgent:
         if result is None:
             return -0.15
         # Meta-invention boosts knowledge field too
-        world.boost_knowledge_field(self.x, self.y, 0.8)
-        return 0.95
+        world.boost_knowledge_field(self.x, self.y, 2.0)
+        self.brain.emotions[E.WONDER] = min(1.0, self.brain.emotions[E.WONDER] + 0.60)
+        return 1.85
 
     # ── NEW: Compose action ──────────────────────────────────────────────────
 
