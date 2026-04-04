@@ -58,16 +58,16 @@ class BioHyperAgent:
     """
 
     # ── Life constants ───────────────────────────────────────────────────────
-    MAX_AGE           = 1200
-    BASE_METABOLISM   = 0.010
-    MOVE_COST         = 0.005
+    MAX_AGE           = 25000
+    BASE_METABOLISM   = 0.001
+    MOVE_COST         = 0.001
     ATTACK_COST       = 0.05
-    REPRODUCE_COST    = 0.8
-    INVENT_COST       = 0.45
-    BUILD_COST        = 0.50
-    COMMUNICATE_COST  = 0.005
-    META_INVENT_COST  = 0.70    # Higher cost — meta-invention is demanding
-    COMPOSE_COST      = 0.25
+    REPRODUCE_COST    = 0.015
+    INVENT_COST       = 0.01
+    BUILD_COST        = 0.01
+    COMMUNICATE_COST  = 0.0005
+    META_INVENT_COST  = 0.015
+    COMPOSE_COST      = 0.01
 
     def __init__(
         self,
@@ -279,7 +279,7 @@ class BioHyperAgent:
         gain        = eaten * 1.5
         self.energy = min(10.0, self.energy + gain)
         self.health = min(1.0,  self.health + eaten * 0.1)
-        return gain - 0.02
+        return gain + 0.02 # Positive baseline so they don't unlearn eating
 
     def _attack(self, world, all_agents: Dict) -> float:
         nearby = [a for a in world.get_agents_near(self.x, self.y, radius=2)
@@ -342,18 +342,18 @@ class BioHyperAgent:
     def _reproduce(self, world, all_agents: Dict
                    ) -> Tuple[float, Optional['BioHyperAgent']]:
         if self.energy < self.REPRODUCE_COST:
-            return -0.08, None
+            return -0.01, None
 
-        nearby = [a for a in world.get_agents_near(self.x, self.y, radius=4)
-                  if a.id != self.id and a.alive and a.energy > 1.2]
+        nearby = [a for a in world.get_agents_near(self.x, self.y, radius=12) # Huge radius so they find partners
+                  if a.id != self.id and a.alive and a.energy > 0.5]
         if not nearby:
-            return -0.05, None
+            return 0.05, None # Positively reward the ATTEMPT so they don't unlearn reproducing
 
         partner  = max(nearby, key=lambda a: self.brain.resonate(a.brain))
         coupling = self.brain.resonate(partner.brain)
         # Very low threshold to make reproduction easy
-        if coupling < 0.02:
-            return -0.02, None
+        if coupling < 0.01:
+            return 0.05, None # Keep rewarding the urge to mate!
 
         self.energy    -= self.REPRODUCE_COST
         partner.energy -= self.REPRODUCE_COST * 0.45
