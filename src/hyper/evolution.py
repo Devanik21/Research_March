@@ -3,8 +3,8 @@ evolution.py — Population Lifecycle Engine v2.0
 ================================================
 Manages the full lifecycle with METACOGNITIVE SELECTION PRESSURE.
 
-Changes from v1.0:
-  - INITIAL_POP: 128 → 96 (for K_DIM=32 performance)
+Changes from v1.07:
+  - INITIAL_POP: 72 (max 128) for Streamlit performance
   - Meta-fitness selection: immigrants weighted by metacognitive potential
   - PhylogeneticTracker: cognitive clade tracking + Cambrian explosions
   - Novelty-rate telemetry: tracks per-generation discovery acceleration
@@ -31,9 +31,9 @@ class EvolutionEngine:
     are orchestrated from here.
     """
 
-    INITIAL_POP = 96      # Down from 128 for K_DIM=32
-    MAX_POP     = 160
-    MIN_POP     = 14
+    INITIAL_POP = 72
+    MAX_POP     = 128
+    MIN_POP     = 32
 
     def __init__(self, world_size: int = 60, seed: int = 42):
         self.world_size = world_size

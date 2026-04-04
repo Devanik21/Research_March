@@ -15,7 +15,7 @@ Actions:
         invent, rest, build_artifact, absorb_artifact
   New:  meta_invent, compose_action
 
-Population: 96 agents (down from 128 for K_DIM=32 performance).
+Population: 72 initial (capped at 128 for Streamlit/K_DIM=32 performance).
 
 Invented by Devanik & Claude (Xylia) — Event Horizon Project
 """
@@ -58,16 +58,16 @@ class BioHyperAgent:
     """
 
     # ── Life constants ───────────────────────────────────────────────────────
-    MAX_AGE           = 480
-    BASE_METABOLISM   = 0.035
-    MOVE_COST         = 0.015
-    ATTACK_COST       = 0.10
-    REPRODUCE_COST    = 1.6
-    INVENT_COST       = 0.85
-    BUILD_COST        = 0.90
-    COMMUNICATE_COST  = 0.015
-    META_INVENT_COST  = 1.2     # Higher cost — meta-invention is demanding
-    COMPOSE_COST      = 0.50
+    MAX_AGE           = 1200
+    BASE_METABOLISM   = 0.010
+    MOVE_COST         = 0.005
+    ATTACK_COST       = 0.05
+    REPRODUCE_COST    = 0.8
+    INVENT_COST       = 0.45
+    BUILD_COST        = 0.50
+    COMMUNICATE_COST  = 0.005
+    META_INVENT_COST  = 0.70    # Higher cost — meta-invention is demanding
+    COMPOSE_COST      = 0.25
 
     def __init__(
         self,
@@ -274,12 +274,12 @@ class BioHyperAgent:
     def _eat(self, world) -> float:
         eaten = 0.0
         for r_type in range(2):
-            consumed = world.consume_resource(self.x, self.y, r_type, 0.55)
+            consumed = world.consume_resource(self.x, self.y, r_type, 1.2)
             eaten   += consumed
-        gain        = eaten * 0.85
+        gain        = eaten * 1.5
         self.energy = min(10.0, self.energy + gain)
-        self.health = min(1.0,  self.health + eaten * 0.04)
-        return gain - 0.04
+        self.health = min(1.0,  self.health + eaten * 0.1)
+        return gain - 0.02
 
     def _attack(self, world, all_agents: Dict) -> float:
         nearby = [a for a in world.get_agents_near(self.x, self.y, radius=2)

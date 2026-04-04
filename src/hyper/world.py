@@ -99,8 +99,8 @@ class World:
 
         # Background noise
         self.resources += (self.rng.rand(self.size, self.size, N_RESOURCES)
-                           .astype(np.float32) * 0.3)
-        self.resources  = np.clip(self.resources, 0.0, 8.0)
+                           .astype(np.float32) * 1.5)
+        self.resources  = np.clip(self.resources, 0.0, 15.0)
 
     # ── Spatial index ────────────────────────────────────────────────────────
 
@@ -129,10 +129,10 @@ class World:
         """World physics: regeneration + knowledge diffusion + events."""
         self.step_count += 1
 
-        # Slow regeneration (exponential, capped)
-        regen = self.rng.exponential(0.006, self.resources.shape).astype(np.float32)
+        # Fast regeneration (exponential, capped) for an abundant world
+        regen = self.rng.exponential(0.025, self.resources.shape).astype(np.float32)
         self.resources += regen
-        self.resources  = np.clip(self.resources, 0.0, 8.0)
+        self.resources  = np.clip(self.resources, 0.0, 15.0)
 
         # Knowledge field diffusion (simple 3×3 Gaussian blur + decay)
         self._diffuse_knowledge_field()
@@ -209,14 +209,14 @@ class World:
             for x in xs:
                 for y in ys:
                     self.resources[x, y] = np.clip(
-                        self.resources[x, y] * 1.9, 0, 8
+                        self.resources[x, y] * 2.5, 0, 15
                     )
             desc = f"🌿 Abundance bloom at ({cx},{cy})"
 
         elif etype == 'scarcity':
             for x in xs:
                 for y in ys:
-                    self.resources[x, y] *= 0.25
+                    self.resources[x, y] *= 0.40 # less punishing
             desc = f"🌵 Scarcity event at ({cx},{cy})"
 
         elif etype == 'anomaly':
@@ -224,21 +224,21 @@ class World:
             for x in xs:
                 for y in ys:
                     self.resources[x, y, r_type] = min(
-                        8.0, self.resources[x, y, r_type] + 4.0
+                        15.0, self.resources[x, y, r_type] + 8.0
                     )
             # Anomalies also boost knowledge field
             for x in xs:
                 for y in ys:
-                    self.knowledge_field[x, y] += 0.5
+                    self.knowledge_field[x, y] += 0.8
             desc = f"🌀 Anomaly ({R_NAMES[r_type]}) at ({cx},{cy})"
 
         else:  # plague
             for x in xs:
                 for y in ys:
-                    self.resources[x, y] *= 0.55
+                    self.resources[x, y] *= 0.70 # less punishing
             desc = f"☠️ Plague zone at ({cx},{cy})"
 
-        self.resources = np.clip(self.resources, 0.0, 8.0)
+        self.resources = np.clip(self.resources, 0.0, 15.0)
         evt = {'step': self.step_count, 'type': etype, 'desc': desc,
                'pos': (cx, cy)}
         self.events.append(evt)
