@@ -1829,14 +1829,14 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
         st.markdown("<div class='section-title'>🏺 THE CULTURAL REPLICATOR (Level 3) · STIGMERGIC FIELD</div>",
                     unsafe_allow_html=True)
 
-        meme_ch_sel = st.radio(
-            "Signal Channel", ["Danger (red)", "Resource (green)", "Sacred (violet)", "Spectral Composite"],
-            horizontal=True, index=3, key='meme_ch_sel'
+        meme_mode = st.radio(
+            "Visualization Type", ["Spectral Composite", "Infinite Stigmergy Garden"],
+            horizontal=True, index=0, key='meme_mode_sel'
         )
 
         meme = W.meme_grid  # (size, size, 3)
 
-        if meme_ch_sel == "Spectral Composite":
+        if meme_mode == "Spectral Composite":
             # ── PRECISION SPECTRAL ADDITIVE BLENDING (100% PARITY) ─────────────
             # Implementation: Harmonic mixing of tradition hues with 2-pass Bloom
             mg_img = np.zeros((W.size, W.size, 3), dtype=np.float32)
@@ -1856,13 +1856,11 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                         m_b = 0.55 + 0.45 * np.cos(h_rad - 4*np.pi/3)
                         
                         # Additive mix: Base Channels + Tradition Spectral Overlay
-                        # This ensures 30+ colors via linear combination of tradition hues
                         mg_img[x, y, 0] += meme[x, y, 0] * 1.2 + intensity * m_r * 0.5
                         mg_img[x, y, 1] += meme[x, y, 1] * 1.2 + intensity * m_g * 0.5
                         mg_img[x, y, 2] += meme[x, y, 2] * 1.2 + intensity * m_b * 0.5
             
             # --- 2. DUAL-SIGMA BLOOM (ORGANIC AURA) ---
-            # Fast two-pass Gaussian blur for Core + Dispersion
             core_bloom = np.zeros_like(mg_img)
             disp_bloom = np.zeros_like(mg_img)
             for i in range(3):
@@ -1875,51 +1873,72 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
             # --- 3. OBSIDIAN TONEMAPPING & GAMMA ---
             max_val = mg_img.max()
             if max_val > 1e-8: mg_img /= max_val
-            
-            # Power law to deepen blacks and emphasize the 'glow'
             mg_img = np.power(mg_img, 0.42) 
             
             fig_meme = go.Figure(go.Image(
                 z=(np.clip(mg_img.transpose(1, 0, 2), 0, 1) * 255).astype(np.uint8),
             ))
-            fig_meme.update_layout(height=480, margin=dict(l=0,r=0,t=0,b=0), dragmode=False)
+            if alive_agents:
+                fig_meme.add_trace(go.Scatter(
+                    x=[a.x for a in alive_agents],
+                    y=[a.y for a in alive_agents],
+                    mode='markers',
+                    marker=dict(size=4, color='#FFFFFF', opacity=0.35,
+                                line=dict(width=0.5, color='rgba(0,0,0,0.5)')),
+                    hoverinfo='skip', showlegend=False,
+                ))
+            fig_meme.update_layout(
+                paper_bgcolor='#000000', plot_bgcolor='#000000',
+                height=520, margin=dict(l=0,r=0,t=0,b=0), dragmode=False,
+                xaxis=dict(showgrid=False, showticklabels=False, zeroline=False, range=[-0.5, W.size-0.5]),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, range=[-0.5, W.size-0.5]),
+            )
             st.plotly_chart(fig_meme, use_container_width=True, key='replicator_live')
 
-
         else:
-            ch_map = {"Danger (red)": 0, "Resource (green)": 1, "Sacred (violet)": 2}
-            ch_cs = {
-                "Danger (red)":     [[0, '#000000'], [0.4, '#1a0008'], [1, '#FF0040']],
-                "Resource (green)": [[0, '#000000'], [0.4, '#001a06'], [1, '#00FF88']],
-                "Sacred (violet)":  [[0, '#000000'], [0.4, '#0d0018'], [1, '#CC44FF']],
-            }
-            ch = ch_map[meme_ch_sel]
-            fig_meme = go.Figure(go.Heatmap(
-                z=meme[:, :, ch].T,
-                colorscale=ch_cs[meme_ch_sel],
-                showscale=True,
-                zsmooth=False, # KILL THE BLUR: GeNeSIS Crunchy Pixels
-                hovertemplate=f'Meme ({meme_ch_sel}) (%{{x}},%{{y}}) = %{{z:.4f}}<extra></extra>',
-            ))
+            # === ♾️ INFINITE STIGMERGY GARDEN (GeNeSIS PARITY) ===
+            garden_freq = st.slider("Garden Resonance Frequency", 0, 1000, 42, key="live_garden_slider")
+            
+            def generate_garden_view(freq, offset):
+                state = np.random.RandomState(freq + offset)
+                matrix = np.eye(3) + state.uniform(-1.0, 1.0, (3, 3)) * 0.8
+                matrix = np.abs(matrix)
+                matrix /= (matrix.sum(axis=1, keepdims=True) + 1e-8)
+                transformed = np.dot(meme[:, :, :3], matrix.T)
+                transformed = np.clip(transformed * 1.2, 0, 1)
+                # Apply subtle Gaussian glow for "Luminous" quality
+                for i in range(3):
+                    transformed[:,:,i] = nd.gaussian_filter(transformed[:,:,i], sigma=0.45)
+                return (transformed * 255).astype(np.uint8)
 
-        if alive_agents:
-            fig_meme.add_trace(go.Scatter(
-                x=[a.x for a in alive_agents],
-                y=[a.y for a in alive_agents],
-                mode='markers',
-                marker=dict(size=3, color='white', opacity=0.25),
-                hoverinfo='skip', showlegend=False,
-            ))
+            sg_c1, sg_c2 = st.columns(2)
+            with sg_c1: 
+                fig1 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 101).transpose(1,0,2)))
+                if alive_agents: fig1.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
+                fig1.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 ALPHA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
+                                   xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
+                st.plotly_chart(fig1, use_container_width=True, key="live_sg1")
+            with sg_c2: 
+                fig2 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 202).transpose(1,0,2)))
+                if alive_agents: fig2.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
+                fig2.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 BETA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
+                                   xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
+                st.plotly_chart(fig2, use_container_width=True, key="live_sg2")
+            
+            sg_c3, sg_c4 = st.columns(2)
+            with sg_c3: 
+                fig3 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 303).transpose(1,0,2)))
+                if alive_agents: fig3.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
+                fig3.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 GAMMA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
+                                   xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
+                st.plotly_chart(fig3, use_container_width=True, key="live_sg3")
+            with sg_c4: 
+                fig4 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 404).transpose(1,0,2)))
+                if alive_agents: fig4.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
+                fig4.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 DELTA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
+                                   xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
+                st.plotly_chart(fig4, use_container_width=True, key="live_sg4")
 
-        fig_meme.update_layout(
-            paper_bgcolor='#000000', plot_bgcolor='#000000',
-            height=400, margin=dict(l=0, r=0, t=8, b=0),
-            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
-                       range=[-0.5, W.size + 0.5]),
-            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
-                       range=[-0.5, W.size + 0.5], scaleanchor='x'),
-        )
-        st.plotly_chart(fig_meme, use_container_width=True, key='meme_grid_v3')
         st.markdown(
             f"<div class='kpi-card'>"
             f"Danger: <span style='color:#FF0040'>{meme[:,:,0].mean():.5f}</span>  ·  "
