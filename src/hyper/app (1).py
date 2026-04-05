@@ -301,7 +301,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-m = st.columns(10)
+wstats = W.get_stats()
+m = st.columns(12)
 m[0].metric("🧬 Alive",     n_alive)
 m[1].metric("🐣 Born",      estats.get('total_born', 0))
 m[2].metric("💀 Died",      estats.get('total_died', 0))
@@ -312,6 +313,9 @@ m[6].metric("❤ Children",  estats.get('total_kids', 0))
 m[7].metric("🧠 Meta-Inv",  estats.get('total_meta_inv', 0))
 m[8].metric("🔮 Clades",    estats.get('n_clades', 0))
 m[9].metric("📡 Tech×",    f"{cstats.get('tech_bonus',1):.4f}")
+m[10].metric("🧲 Bonds",   wstats.get('n_bonds', 0))
+m[11].metric("🌀 Season",   wstats.get('season', 'Summer'))
+
 
 st.divider()
 
@@ -325,8 +329,10 @@ st.divider()
 tab_names = [
     "🌍 WORLD MAP", "🧬 AGENTS", "🏛 CIVILIZATION", "💡 TECH TREE",
     "📊 ANALYTICS", "🔬 HRC BRAIN", "📡 EVENTS FEED", "🗺 RESOURCES",
-    "🧠 META-MIND", "🔬 KNOWLEDGE"
+    "🧠 META-MIND", "🔬 KNOWLEDGE",
+    "🧬 v3.0 EMERGENCE",  # NEW: All 30 v3.0 features dashboard
 ]
+
 
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = tab_names[0]
@@ -400,13 +406,15 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
             for r in dicts:
                 mi = MODE_ICON.get(r['mode'], '?')
                 hover_texts.append(
-                    f"<b>{r['id']}</b>  [{r['tribe']}]<br>"
+                    f"<b>{r['id']}</b>  [{r['tribe']}] 🎭{r.get('role','?')}<br>"
                     f"{mi} {r['mode'].upper()}<br>"
                     f"E:{r['energy']}  hp:{r['health']:.2f}  age:{r['age']}  gen:{r['generation']}<br>"
                     f"💡{r['inventions']} ❤{r['children']} ⚔{r['kills']}  rep:{r['reputation']:+.1f}<br>"
                     f"cur:{r['curiosity']:.2f} wdr:{r['wonder']:.2f} fear:{r['fear']:.2f}<br>"
+                    f"Φ:{r.get('phi',0):.3f} 🔄:{r.get('trade_count',0)} inv:{r.get('inventory','')}<br>"
                     f"last: {r['last_action']}"
                 )
+
             fig_map.add_trace(go.Scatter(
                 x=df_ag['x'], y=df_ag['y'],
                 mode='markers',
@@ -542,9 +550,14 @@ elif st.session_state.active_tab == "🧬 AGENTS":
                     f"rep:{r['reputation']:+.1f} 📦{r['absorbed']}</span><br>"
                     f"<span style='color:#FF8C00'>⚙ meta-inv:{r.get('meta_inventions',0)} "
                     f"composed:{r.get('composed_actions',0)} "
-                    f"eigen:{r.get('meta_eigenspread',0):.3f}</span>"
+                    f"eigen:{r.get('meta_eigenspread',0):.3f}</span><br>"
+                    f"<span style='color:#aef'>🎭{r.get('role','?')} "
+                    f"Φ:{r.get('phi',0):.3f} "
+                    f"🔄:{r.get('trade_count',0)} "
+                    f"inv:{r.get('inventory','-')}</span>"
                     f"</div>"
                 )
+
             st.markdown("\n".join(rows_html), unsafe_allow_html=True)
 
         with chart_col:
@@ -1779,6 +1792,493 @@ elif st.session_state.active_tab == "🔬 KNOWLEDGE":
             )
 
 
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 11  ─  v3.0 EMERGENCE DASHBOARD (ALL 30 NEW FEATURES)
+# ══════════════════════════════════════════════════════════════════════════════
+elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
+    st.markdown(
+        "<div class='section-title'>🧬 v3.0 EMERGENCE DASHBOARD · All 30 GeNeSIS Features Live</div>",
+        unsafe_allow_html=True
+    )
+
+    # ── Top KPI row: v3.0 specific metrics ────────────────────────────────────
+    wstats_em = W.get_stats()
+    ek = st.columns(8)
+    ek[0].metric("🧲 Bonds",         wstats_em.get('n_bonds', 0))
+    ek[1].metric("🌀 Kuramoto r",    f"{wstats_em.get('kuramoto_order', 0):.4f}")
+    ek[2].metric("⚡ Pheromone",     f"{wstats_em.get('pheromone_activity', 0):.1f}")
+    ek[3].metric("🎨 Meme activity", f"{wstats_em.get('meme_activity', 0):.1f}")
+    ek[4].metric("🌟 Season",        wstats_em.get('season', 'Summer'))
+    ek[5].metric("⛅ Weather amp",   f"{wstats_em.get('weather_amplitude', 1):.3f}")
+    ek[6].metric("🏛 Structures",    wstats_em.get('n_structures', 0))
+    ek[7].metric("💎 Mega-res",      wstats_em.get('n_mega_resources', 0))
+
+    st.divider()
+
+    # ── ROW 1: Meme Grid (black dark) + Pheromone Grid ────────────────────────
+    mg_col, ph_col = st.columns(2)
+
+    with mg_col:
+        st.markdown("<div class='section-title'>🎨 Meme Grid (Stigmergy) · Cultural Memory Field</div>",
+                    unsafe_allow_html=True)
+
+        meme_ch_sel = st.radio(
+            "Channel", ["Danger (red)", "Resource (green)", "Sacred (violet)", "Composite RGB"],
+            horizontal=True, key='meme_ch_sel'
+        )
+        meme = W.meme_grid  # (size, size, 3)
+
+        if meme_ch_sel == "Composite RGB":
+            mg_img = np.zeros((W.size, W.size, 3), dtype=np.float32)
+            mg_img[:, :, 0] = meme[:, :, 0]
+            mg_img[:, :, 1] = meme[:, :, 1]
+            mg_img[:, :, 2] = meme[:, :, 2]
+            max_v = mg_img.max()
+            if max_v > 1e-9:
+                mg_img /= max_v
+            fig_meme = go.Figure(go.Image(
+                z=(np.clip(mg_img.transpose(1, 0, 2), 0, 1) * 255).astype(np.uint8),
+            ))
+        else:
+            ch_map = {"Danger (red)": 0, "Resource (green)": 1, "Sacred (violet)": 2}
+            ch_cs = {
+                "Danger (red)":     [[0, '#000000'], [0.4, '#1a0008'], [1, '#FF0040']],
+                "Resource (green)": [[0, '#000000'], [0.4, '#001a06'], [1, '#00FF88']],
+                "Sacred (violet)":  [[0, '#000000'], [0.4, '#0d0018'], [1, '#CC44FF']],
+            }
+            ch = ch_map[meme_ch_sel]
+            fig_meme = go.Figure(go.Heatmap(
+                z=meme[:, :, ch].T,
+                colorscale=ch_cs[meme_ch_sel],
+                showscale=True,
+                hovertemplate=f'Meme ({meme_ch_sel}) (%{{x}},%{{y}}) = %{{z:.4f}}<extra></extra>',
+            ))
+
+        if alive_agents:
+            fig_meme.add_trace(go.Scatter(
+                x=[a.x for a in alive_agents],
+                y=[a.y for a in alive_agents],
+                mode='markers',
+                marker=dict(size=3, color='white', opacity=0.25),
+                hoverinfo='skip', showlegend=False,
+            ))
+
+        fig_meme.update_layout(
+            paper_bgcolor='#000000', plot_bgcolor='#000000',
+            height=400, margin=dict(l=0, r=0, t=8, b=0),
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                       range=[-0.5, W.size + 0.5]),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                       range=[-0.5, W.size + 0.5], scaleanchor='x'),
+        )
+        st.plotly_chart(fig_meme, use_container_width=True, key='meme_grid_v3')
+        st.markdown(
+            f"<div class='kpi-card'>"
+            f"Danger: <span style='color:#FF0040'>{meme[:,:,0].mean():.5f}</span>  ·  "
+            f"Resource: <span style='color:#00FF88'>{meme[:,:,1].mean():.5f}</span>  ·  "
+            f"Sacred: <span style='color:#CC44FF'>{meme[:,:,2].mean():.5f}</span>"
+            f"</div>", unsafe_allow_html=True
+        )
+
+    with ph_col:
+        st.markdown("<div class='section-title'>🔴 Pheromone Grid · 8-Channel Chemical Stigmergy</div>",
+                    unsafe_allow_html=True)
+
+        ph_ch_sel = st.slider("Channel (0–7, or -1 = composite)", -1, 7, -1, key='ph_ch_v3')
+        if ph_ch_sel == -1:
+            ph_data = W.pheromone_grid.sum(axis=2)
+            ph_title = "Composite (all 8 channels)"
+        else:
+            ph_data = W.pheromone_grid[:, :, ph_ch_sel]
+            ph_title = f"Channel {ph_ch_sel}"
+
+        fig_ph = go.Figure(go.Heatmap(
+            z=ph_data.T,
+            colorscale=[
+                [0.00, '#000000'], [0.15, '#04040e'],
+                [0.50, '#0a1030'], [0.80, '#2050cc'],
+                [1.00, '#7DF9FF'],
+            ],
+            showscale=True,
+            hovertemplate='Pheromone (%{x},%{y}) = %{z:.5f}<extra></extra>',
+        ))
+        if alive_agents:
+            fig_ph.add_trace(go.Scatter(
+                x=[a.x for a in alive_agents],
+                y=[a.y for a in alive_agents],
+                mode='markers',
+                marker=dict(size=3, color='rgba(255,255,255,0.2)'),
+                hoverinfo='skip', showlegend=False,
+            ))
+        fig_ph.update_layout(
+            paper_bgcolor='#000000', plot_bgcolor='#000000',
+            height=400, margin=dict(l=0, r=0, t=28, b=0),
+            title=dict(text=ph_title, font=dict(color='#7DF9FF', size=11)),
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, scaleanchor='x'),
+        )
+        st.plotly_chart(fig_ph, use_container_width=True, key='phero_v3')
+
+    st.divider()
+
+    # ── ROW 2: Kuramoto synchrony + Phi consciousness ─────────────────────────
+    kur_col2, phi_col2 = st.columns(2)
+
+    with kur_col2:
+        st.markdown("<div class='section-title'>🌀 Kuramoto Phase Synchrony</div>",
+                    unsafe_allow_html=True)
+        if alive_agents:
+            import math
+            phases = [a.kuramoto_phase for a in alive_agents]
+            r_order = wstats_em.get('kuramoto_order', 0)
+            xs_k = [math.cos(p) for p in phases]
+            ys_k = [math.sin(p) for p in phases]
+            colors_k = [f"rgb{a.brain.spectral_rgb()}" for a in alive_agents]
+
+            fig_kur2 = go.Figure()
+            theta_ring = np.linspace(0, 2 * np.pi, 120)
+            fig_kur2.add_trace(go.Scatter(
+                x=np.cos(theta_ring).tolist(), y=np.sin(theta_ring).tolist(),
+                mode='lines', line=dict(color='#1a1a3a', width=1),
+                hoverinfo='skip', showlegend=False,
+            ))
+            fig_kur2.add_trace(go.Scatter(
+                x=xs_k, y=ys_k, mode='markers',
+                marker=dict(size=6, color=colors_k, opacity=0.85,
+                            line=dict(width=0.5, color='rgba(255,255,255,0.15)')),
+                text=[a.id for a in alive_agents],
+                hovertemplate='%{text}<extra></extra>',
+                name='Agents',
+            ))
+            mean_phase = float(np.angle(np.mean([np.exp(1j * p) for p in phases])))
+            fig_kur2.add_trace(go.Scatter(
+                x=[0, r_order * math.cos(mean_phase)],
+                y=[0, r_order * math.sin(mean_phase)],
+                mode='lines+markers',
+                line=dict(color='#FFD700', width=3),
+                marker=dict(size=[0, 10], color='#FFD700'),
+                name=f'Order r={r_order:.4f}',
+            ))
+            fig_kur2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=320, margin=dict(l=10, r=10, t=30, b=10),
+                title=dict(text=f'Kuramoto Order r = {r_order:.4f}  (1.0 = full sync)',
+                           font=dict(color='#FFD700', size=11)),
+                xaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                           range=[-1.25, 1.25]),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                           range=[-1.25, 1.25], scaleanchor='x'),
+                legend=dict(font=dict(size=9, color='#556'),
+                            bgcolor='rgba(0,0,0,0.5)'),
+            )
+            st.plotly_chart(fig_kur2, use_container_width=True, key='kuramoto_v3')
+
+    with phi_col2:
+        st.markdown("<div class='section-title'>Φ IIT Consciousness (Integrated Information Theory)</div>",
+                    unsafe_allow_html=True)
+        if alive_agents:
+            phi_vals2 = [getattr(a, 'phi_value', 0.0) for a in alive_agents]
+            strange2  = sum(1 for a in alive_agents if getattr(a, 'strange_loop_active', False))
+            phi_arr2  = np.array(phi_vals2)
+            verified  = sum(1 for v in phi_vals2 if v > 0.1)
+
+            pc1, pc2, pc3, pc4 = st.columns(4)
+            pc1.metric("Φ Mean",   f"{phi_arr2.mean():.4f}")
+            pc2.metric("Φ Max",    f"{phi_arr2.max():.4f}")
+            pc3.metric("🔁 Loops", strange2)
+            pc4.metric("✅ Verified", verified)
+
+            fig_phi2 = go.Figure(go.Histogram(
+                x=phi_vals2, nbinsx=30,
+                marker=dict(color='#DDA0DD', line=dict(color='#04040e', width=0.5)),
+            ))
+            fig_phi2.add_vline(x=0.1, line=dict(color='#FFD700', width=1.5, dash='dash'),
+                               annotation_text="Φ_critical",
+                               annotation_font_color='#FFD700')
+            fig_phi2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=220, margin=dict(l=30, r=10, t=32, b=10),
+                title=dict(text='Φ Distribution (IIT Consciousness)',
+                           font=dict(color='#DDA0DD', size=11)),
+                xaxis=dict(title='Φ', color='#445', gridcolor='#0d0d1e'),
+                yaxis=dict(title='Agents', color='#445', gridcolor='#0d0d1e'),
+                font=dict(color='#445', size=9),
+            )
+            st.plotly_chart(fig_phi2, use_container_width=True, key='phi_v3')
+
+            fig_phi_e2 = go.Figure(go.Scatter(
+                x=phi_vals2, y=[a.energy for a in alive_agents],
+                mode='markers',
+                marker=dict(size=5, color='#DDA0DD', opacity=0.60, line=dict(width=0)),
+            ))
+            fig_phi_e2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=110, margin=dict(l=30, r=10, t=20, b=20),
+                title=dict(text='Φ vs Energy', font=dict(color='#aef', size=10)),
+                xaxis=dict(title='Φ', color='#445', gridcolor='#0d0d1e'),
+                yaxis=dict(title='Energy', color='#445', gridcolor='#0d0d1e'),
+                font=dict(color='#445', size=9),
+            )
+            st.plotly_chart(fig_phi_e2, use_container_width=True, key='phi_energy_v3')
+
+    st.divider()
+
+    # ── ROW 3: Role Census + Social Economy ───────────────────────────────────
+    role_col2, econ_col2 = st.columns(2)
+
+    with role_col2:
+        st.markdown("<div class='section-title'>🎭 Role / Caste System</div>", unsafe_allow_html=True)
+        if alive_agents:
+            ROLE_COLORS = {
+                'Queen': '#FFD700', 'Warrior': '#FF4455',
+                'Forager': '#44FF88', 'Processor': '#7DF9FF', 'Generalist': '#556'
+            }
+            roles2 = [getattr(a, 'role', 'Generalist') for a in alive_agents]
+            role_u = list(set(roles2))
+            role_c = [roles2.count(r) for r in role_u]
+            fig_roles2 = go.Figure(go.Pie(
+                labels=role_u, values=role_c, hole=0.5,
+                marker=dict(colors=[ROLE_COLORS.get(r, '#888') for r in role_u]),
+                textfont=dict(size=10, color='#eee'),
+            ))
+            fig_roles2.update_layout(
+                paper_bgcolor='#04040e', height=240,
+                margin=dict(l=0, r=0, t=20, b=0),
+                title=dict(text=f'Caste Distribution ({len(alive_agents)} agents)',
+                           font=dict(color='#aef', size=11), x=0.5),
+                font=dict(color='#556', size=9),
+                legend=dict(font=dict(size=9, color='#556')),
+            )
+            st.plotly_chart(fig_roles2, use_container_width=True, key='roles_v3')
+            n_fertile2 = sum(1 for a in alive_agents if getattr(a, 'is_fertile', True))
+            rc1, rc2 = st.columns(2)
+            rc1.metric("👸 Fertile",  n_fertile2)
+            rc2.metric("👑 Queens",   roles2.count('Queen'))
+
+    with econ_col2:
+        st.markdown("<div class='section-title'>🔄 Social Economy · Trade + Punish + Inventory</div>",
+                    unsafe_allow_html=True)
+        if alive_agents:
+            sc1, sc2, sc3 = st.columns(3)
+            sc1.metric("🔄 Trades",    cstats.get('total_trades', 0))
+            sc2.metric("⚠ Punishments", sum(getattr(a, 'punish_count', 0) for a in alive_agents))
+            sc3.metric("🧲 Bonds",     wstats_em.get('n_bonds', 0))
+
+            inv_data2 = [getattr(a, 'inventory', [0, 0, 0]) for a in alive_agents]
+            red2   = sum(v[0] for v in inv_data2)
+            green2 = sum(v[1] for v in inv_data2)
+            blue2  = sum(v[2] for v in inv_data2)
+            fig_inv2 = go.Figure(go.Bar(
+                x=['Red (Food)', 'Green (Mineral)', 'Blue (Knowledge)'],
+                y=[red2, green2, blue2],
+                marker=dict(color=['#FF4455', '#44FF88', '#7DF9FF'], line=dict(width=0)),
+                text=[f"{v:,}" for v in [red2, green2, blue2]],
+                textposition='outside', textfont=dict(size=10, color='#aef'),
+            ))
+            fig_inv2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=210, margin=dict(l=30, r=10, t=32, b=10),
+                title=dict(text='Token Inventory (population total)',
+                           font=dict(color='#aef', size=11)),
+                xaxis=dict(color='#445'),
+                yaxis=dict(color='#445', gridcolor='#0d0d1e'),
+                font=dict(color='#445', size=9),
+            )
+            st.plotly_chart(fig_inv2, use_container_width=True, key='inventory_v3')
+
+    st.divider()
+
+    # ── ROW 4: Cultural Ratchet + Archetypes + Structures ─────────────────────
+    cult_col2, arch_col2, struct_col2 = st.columns(3)
+
+    with cult_col2:
+        st.markdown("<div class='section-title'>🍞 Cultural Ratchet (Tradition)</div>",
+                    unsafe_allow_html=True)
+        continuity2 = estats.get('cultural_continuity', 0.0)
+        tradition2  = estats.get('tradition_verified', False)
+        cc1, cc2 = st.columns(2)
+        cc1.metric("Continuity r", f"{continuity2:.4f}")
+        cc2.metric("✔ Tradition",  "✅" if tradition2 else "❌")
+
+        gen_arch2 = EN.gen_behavior_archive
+        if len(gen_arch2) >= 2:
+            keys2 = sorted(gen_arch2.keys())
+            fig_cult2 = go.Figure()
+            for i, key2 in enumerate(keys2[-6:]):
+                profile2 = gen_arch2[key2]
+                fig_cult2.add_trace(go.Scatter(
+                    y=np.abs(profile2).tolist(),
+                    mode='lines', name=f"Gen {key2}",
+                    line=dict(width=1.2),
+                    opacity=0.4 + 0.6 * (i / max(len(keys2[-6:]) - 1, 1)),
+                ))
+            fig_cult2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=180, margin=dict(l=30, r=10, t=10, b=10),
+                xaxis=dict(color='#445', showgrid=False),
+                yaxis=dict(color='#445', gridcolor='#0d0d1e'),
+                legend=dict(font=dict(size=7, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
+                font=dict(color='#445', size=8),
+            )
+            st.plotly_chart(fig_cult2, use_container_width=True, key='cult_ratchet_v3')
+        else:
+            st.info("Run 50+ ticks for cultural data.")
+
+    with arch_col2:
+        st.markdown("<div class='section-title'>🔍 Behavioral Archetypes (KMeans)</div>",
+                    unsafe_allow_html=True)
+        arch_c2 = estats.get('archetype_counts', {})
+        if arch_c2:
+            ARCH_C = {'Explorer': '#7DF9FF', 'Builder': '#FFD700',
+                      'Fighter': '#FF4455', 'Thinker': '#DDA0DD'}
+            fig_arch2 = go.Figure(go.Bar(
+                x=list(arch_c2.keys()), y=list(arch_c2.values()),
+                marker=dict(color=[ARCH_C.get(k, '#888') for k in arch_c2],
+                            line=dict(width=0)),
+                text=list(arch_c2.values()),
+                textposition='outside', textfont=dict(size=11, color='#aef'),
+            ))
+            fig_arch2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=210, margin=dict(l=30, r=10, t=24, b=10),
+                title=dict(text='Behavior Archetypes', font=dict(color='#aef', size=11)),
+                xaxis=dict(color='#445'),
+                yaxis=dict(color='#445', gridcolor='#0d0d1e'),
+                font=dict(color='#445', size=9),
+            )
+            st.plotly_chart(fig_arch2, use_container_width=True, key='archetypes_v3')
+        else:
+            st.info("Run 15+ ticks.")
+
+    with struct_col2:
+        st.markdown("<div class='section-title'>🏗 Structures on Field</div>",
+                    unsafe_allow_html=True)
+        structs2 = W.structures
+        if structs2:
+            SCOL = {'trap': '#FF4455', 'battery': '#FFD700', 'cultivator': '#44FF88'}
+            stypes2 = list(set(s.struct_type for s in structs2.values()))
+            fig_s2 = go.Figure()
+            for stype in stypes2:
+                xs_s2 = [pos[0] for pos, s in structs2.items() if s.struct_type == stype]
+                ys_s2 = [pos[1] for pos, s in structs2.items() if s.struct_type == stype]
+                durs2 = [s.durability for pos, s in structs2.items() if s.struct_type == stype]
+                fig_s2.add_trace(go.Scatter(
+                    x=xs_s2, y=ys_s2, mode='markers', name=stype,
+                    marker=dict(size=11, symbol='square',
+                                color=SCOL.get(stype, '#888'), opacity=0.9,
+                                line=dict(width=1, color='rgba(255,255,255,0.25)')),
+                    text=[f"{stype}<br>dur:{d:.0f}" for d in durs2],
+                    hovertemplate='%{text}<extra></extra>',
+                ))
+            fig_s2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=225, margin=dict(l=0, r=0, t=10, b=0),
+                xaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                           range=[-0.5, W.size + 0.5]),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
+                           range=[-0.5, W.size + 0.5], scaleanchor='x'),
+                legend=dict(font=dict(size=8, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
+            )
+            st.plotly_chart(fig_s2, use_container_width=True, key='structs_v3')
+        else:
+            st.info("No structures yet — agents need more ticks to build.")
+
+    st.divider()
+
+    # ── ROW 5: Active Inference + GoL Scratchpad + DNA Export ─────────────────
+    ai_col2, gol_col2, dna_col2 = st.columns(3)
+
+    with ai_col2:
+        st.markdown("<div class='section-title'>📐 Active Inference · Prediction Errors</div>",
+                    unsafe_allow_html=True)
+        if alive_agents:
+            top_ai2 = sorted(alive_agents, key=lambda a: a.energy, reverse=True)[:5]
+            fig_ai2 = go.Figure()
+            for a in top_ai2:
+                errors2 = a.brain.prediction_errors[-40:]
+                if errors2:
+                    fig_ai2.add_trace(go.Scatter(
+                        y=errors2, mode='lines', name=a.id,
+                        line=dict(width=1.5), opacity=0.8,
+                    ))
+            conf_vals2 = [a.brain.confidence for a in alive_agents]
+            avg_conf2 = float(np.mean(conf_vals2)) if conf_vals2 else 0
+            fig_ai2.update_layout(
+                paper_bgcolor='#04040e', plot_bgcolor='#04040e',
+                height=210, margin=dict(l=30, r=10, t=32, b=10),
+                title=dict(text=f'Prediction Errors | avg conf={avg_conf2:.3f}',
+                           font=dict(color='#aef', size=10)),
+                xaxis=dict(color='#445', showgrid=False),
+                yaxis=dict(color='#445', gridcolor='#0d0d1e'),
+                legend=dict(font=dict(size=7, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
+                font=dict(color='#445', size=9),
+            )
+            st.plotly_chart(fig_ai2, use_container_width=True, key='active_inference_v3')
+
+    with gol_col2:
+        st.markdown("<div class='section-title'>🧩 GoL Scratchpad (Largest Writer)</div>",
+                    unsafe_allow_html=True)
+        if alive_agents:
+            top_gol2 = max(alive_agents, key=lambda a: getattr(a, 'scratchpad_writes', 0))
+            pad2 = top_gol2.scratchpad.astype(float)
+            sw   = getattr(top_gol2, 'scratchpad_writes', 0)
+            fig_gol2 = go.Figure(go.Heatmap(
+                z=pad2.T,
+                colorscale=[[0, '#000000'], [1, '#00FF88']],
+                showscale=False, hoverinfo='skip',
+            ))
+            fig_gol2.update_layout(
+                paper_bgcolor='#000000', plot_bgcolor='#000000',
+                height=210, margin=dict(l=0, r=0, t=32, b=0),
+                title=dict(text=f'{top_gol2.id} GoL · {sw} writes',
+                           font=dict(color='#00FF88', size=10)),
+                xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, scaleanchor='x'),
+            )
+            st.plotly_chart(fig_gol2, use_container_width=True, key='gol_v3')
+
+    with dna_col2:
+        st.markdown("<div class='section-title'>🧬 Simulation DNA Export</div>",
+                    unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='kpi-card'>"
+            f"Tradition: <span style='color:#{'44FF88' if estats.get('tradition_verified') else '556'}'>"
+            f"{'✅ Verified' if estats.get('tradition_verified') else '❌ Not yet'}</span><br>"
+            f"Cultural r: <span style='color:#7DF9FF'>{estats.get('cultural_continuity',0):.4f}</span><br>"
+            f"Archetypes: {', '.join(f'{k}:{v}' for k,v in estats.get('archetype_counts',{}).items()) or 'none yet'}<br>"
+            f"Bonds: <span style='color:#FFD700'>{wstats_em.get('n_bonds',0)}</span><br>"
+            f"Structures: <span style='color:#FF8C00'>{wstats_em.get('n_structures',0)}</span><br>"
+            f"Mega-res: <span style='color:#DDA0DD'>{wstats_em.get('n_mega_resources',0)}</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+        if st.button("🧬 Export DNA (JSON)", use_container_width=True, key='dna_export'):
+            import json
+            dna = EN.export_simulation_dna(civ=C, world=W)
+            def _np_fix(obj):
+                if isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                if isinstance(obj, (np.integer,)):
+                    return int(obj)
+                if isinstance(obj, (np.floating,)):
+                    return float(obj)
+                if isinstance(obj, dict):
+                    return {k: _np_fix(v) for k, v in obj.items()}
+                if isinstance(obj, list):
+                    return [_np_fix(x) for x in obj]
+                return obj
+            dna_clean = _np_fix(dna)
+            st.download_button(
+                label="⬇ Download DNA.json",
+                data=json.dumps(dna_clean, indent=2),
+                file_name=f"hyperagent_dna_tick{W.step_count}.json",
+                mime="application/json",
+                use_container_width=True,
+                key='dna_download',
+            )
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # FOOTER
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1786,9 +2286,9 @@ st.divider()
 st.markdown(
     "<div style='text-align:center;font-family:monospace;font-size:10px;"
     "color:#151530;padding:8px'>"
-    "HyPER AgEnT v2.0 · HyperAgent Edition · K_DIM=32 · 96 Agents<br>"
-    "Metacognitive Self-Modification · Gödel-Encoded Inventions · Zero LLM<br>"
-    "Invented by Devanik &amp; Claude (Xylia) · 2025"
+    "HyPER AgEnT v3.0 · HyperAgent Edition · K_DIM=32 · 96 Agents · 30 GeNeSIS Features<br>"
+    "Metacognitive Self-Modification · Stigmergy · Pheromones · Gödel-Encoded Inventions · Zero LLM<br>"
+    "Invented by Devanik &amp; Claude (Xylia) · 2025–2026"
     "</div>",
     unsafe_allow_html=True
 )

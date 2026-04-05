@@ -259,6 +259,11 @@ class World:
         self.kuramoto_order_parameter: float = 0.0
         self.population_count        : int   = 0
 
+        # ══════════════════════════════════════════════════════════════════
+        # Event log for frontend events feed
+        # ══════════════════════════════════════════════════════════════════
+        self._event_log: List[dict] = []
+
     # ── Agent spatial index ──────────────────────────────────────────────────
 
     def register_agents(self, agents: list) -> None:
@@ -663,6 +668,7 @@ class World:
             'abundance', 'scarcity', 'knowledge_bloom',
             'resource_shift', 'nothing'
         ])
+        desc = f"World: {event_type}"
         if event_type == 'abundance':
             cx, cy = self.rng.randint(0, self.size, 2)
             for dx in range(-6, 7):
@@ -671,6 +677,7 @@ class World:
                     by = (cy + dy) % self.size
                     self.resources[bx, by] += self.rng.exponential(1.0, N_RESOURCES)
             np.clip(self.resources, 0, 15, out=self.resources)
+            desc = f"🌱 Abundance burst @ ({cx},{cy})"
         elif event_type == 'scarcity':
             cx, cy = self.rng.randint(0, self.size, 2)
             for dx in range(-5, 6):
@@ -678,13 +685,22 @@ class World:
                     bx = (cx + dx) % self.size
                     by = (cy + dy) % self.size
                     self.resources[bx, by] *= 0.25
+            desc = f"☃️ Scarcity drought @ ({cx},{cy})"
         elif event_type == 'knowledge_bloom':
             cx, cy = self.rng.randint(0, self.size, 2)
             self.boost_knowledge_field(cx, cy, 4.0)
+            desc = f"✨ Knowledge bloom @ ({cx},{cy})"
         elif event_type == 'resource_shift':
-            # Rotate the resource grid slightly
             shift = self.rng.randint(1, 4)
             self.resources = np.roll(self.resources, shift, axis=0)
+            desc = f"🌀 Resource grid shift ×{shift}"
+        if event_type != 'nothing':
+            self._event_log.append({
+                'step': self.step_count, 'type': event_type,
+                'desc': desc, 'pos': (0, 0)
+            })
+            if len(self._event_log) > 200:
+                self._event_log.pop(0)
 
     # ── Artifact access ──────────────────────────────────────────────────────
 
@@ -712,3 +728,66 @@ class World:
             'pheromone_activity'    : float(self.pheromone_grid.sum()),
             'meme_activity'         : float(self.meme_grid.sum()),
         }
+
+    # ── Frontend compatibility methods ───────────────────────────────────────
+
+    def resource_heatmap(self) -> np.ndarray:
+        """Sum all 4 resource layers → (size, size) heatmap for world map view."""
+        return self.resources.sum(axis=2)
+
+    def artifact_positions(self) -> Tuple[List[int], List[int]]:
+        """Return (xs, ys) lists of artifact coordinates."""
+        xs = [pos[0] for pos in self.artifacts]
+        ys = [pos[1] for pos in self.artifacts]
+        return xs, ys
+
+    def knowledge_field_heatmap(self) -> np.ndarray:
+        """Return knowledge field grid (size, size) for frontend heatmap."""
+        return self.knowledge_field.copy()
+
+    def get_recent_events(self, n: int = 20) -> List[dict]:
+        """Return recent world events for frontend events feed."""
+        return list(reversed(self._event_log[-n:])) if hasattr(self, '_event_log') else []
+
+    def get_local_signal(self, x: int, y: int) -> np.ndarray:
+        """
+        Build 16D local signal vector for Oracle query and sensing.
+        Combines resources, knowledge, pheromones.
+        """
+        bx, by = x % self.size, y % self.size
+        sig = np.zeros(16, dtype=float)
+        sig[:4]  = self.resources[bx, by]
+        sig[4]   = self.knowledge_field[bx, by]
+        sig[5:13] = self.pheromone_grid[bx, by]
+        sig[13]  = self.meme_grid[bx, by, 0]  # danger
+        sig[14]  = self.meme_grid[bx, by, 1]  # resource
+        sig[15]  = self.meme_grid[bx, by, 2]  # sacred
+        return sig
+
+    @property
+    def world_knowledge(self) -> dict:
+        """Compatibility property: return artifact names as 'world knowledge' dict."""
+        wk = {}
+        for (x, y), art in self.artifacts.items():
+            name = art.get('name', '?')
+            wk[name] = art
+        return wk
+
+    @property
+    def global_memory(self) -> 'GlobalMemoryStub':
+        """Compatibility property for legacy frontend calls."""
+        if not hasattr(self, '_global_memory_stub'):
+            self._global_memory_stub = GlobalMemoryStub(self)
+        return self._global_memory_stub
+
+
+class GlobalMemoryStub:
+    """Compatibility stub for frontend calls to W.global_memory."""
+    def __init__(self, world: 'World'):
+        self._world = world
+        self.count  = 0
+
+    def spectral_summary(self) -> np.ndarray:
+        """Return a spectral summary from the knowledge field."""
+        return np.abs(np.fft.rfft(self._world.knowledge_field.mean(axis=0)))[:32]
+
