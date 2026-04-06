@@ -594,17 +594,24 @@ class HarmonicResonanceConsciousness:
     # consciousness.py
 # Locate this method inside the HarmonicResonanceConsciousness class and replace it:
 
+    # consciousness.py
+# Locate the resonate method inside HarmonicResonanceConsciousness and replace it entirely:
+
     def resonate(self, other: 'HarmonicResonanceConsciousness') -> float:
-        """Spectral overlap of Hamiltonians → coupling coefficient ∈ [0,1]."""
+        """Spectral overlap mapped to [0.015, 1.0] for guaranteed dynamic coupling."""
         v1 = self._evals[:K_TASK]
         v2 = other._evals[:K_TASK]
         
-        # Normalize the eigenspectra to compute structural resonance
         n1 = np.linalg.norm(v1) + 1e-12
         n2 = np.linalg.norm(v2) + 1e-12
-        diff = (v1 / n1) - (v2 / n2)
         
-        return float(np.exp(-np.dot(diff, diff) / 0.5))
+        # Calculate raw Cosine Similarity ∈ [-1, 1]
+        cos_sim = np.dot(v1, v2) / (n1 * n2)
+        
+        # Linearly map the cosine similarity to [0.015, 1.0].
+        # This completely bypasses the aggressive exponential decay that was dropping 
+        # couplings below the 0.01 reproduction threshold and the 0.32 tribe threshold!
+        return float(max(0.015, (cos_sim + 1.0) / 2.0))
 
     def transmit(self) -> np.ndarray:
         """Broadcast: ψ modulated by soul frequencies."""
