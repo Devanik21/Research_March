@@ -51,7 +51,7 @@ class PhysicsOracle(nn.Module):
         super().__init__()
         torch.manual_seed(seed)
         self.layers = nn.Sequential(
-            nn.Linear(37, 64),
+            nn.Linear(50, 64),
             nn.Tanh(),
             nn.Linear(64, 64),
             nn.SiLU(),
@@ -191,7 +191,7 @@ class World:
       - MegaResources for cooperative incentives
     """
 
-    SEASON_LENGTH = 50   # ticks per season
+    SEASON_LENGTH = 100   # ticks per season
 
     def __init__(self, size: int = 60, seed: int = 42):
         self.size       = size
@@ -221,14 +221,14 @@ class World:
         # ══════════════════════════════════════════════════════════════════
         # NEW v3.0: Pheromone Grid (8 chemical channels)
         # ══════════════════════════════════════════════════════════════════
-        self.pheromone_grid = np.zeros((size, size, 8), dtype=np.float32)
+        self.pheromone_grid = np.zeros((size, size, 16), dtype=np.float32)
 
         # ══════════════════════════════════════════════════════════════════
-        # NEW v3.0: Meme Grid — Stigmergic Memory (3 channels)
-        #   Channel 0 = Danger, Channel 1 = Resource, Channel 2 = Sacred
+        # NEW v3.0: Meme Grid — Stigmergic Memory (8 channels)
+        #   Channel 0=Danger, 1=Resource, 2=Sacred, 3=Taboo, 
+        #   4=Tech, 5=Art, 6=War, 7=Self
         # ══════════════════════════════════════════════════════════════════
-        self.meme_grid = np.zeros((size, size, 3), dtype=np.float32)
-        self.meme_hue_grid = np.zeros((size, size), dtype=np.float32)
+        self.meme_grid = np.zeros((size, size, 8), dtype=np.float32)
 
 
         # ══════════════════════════════════════════════════════════════════
@@ -398,20 +398,19 @@ class World:
     # NEW v3.0: PHYSICS ORACLE INTERFACE
     # ══════════════════════════════════════════════════════════════════════════
 
+    # world.py
     def query_oracle(self, vector_21: np.ndarray,
-                     local_signal_16: np.ndarray) -> np.ndarray:
+                     local_signal_29: np.ndarray) -> np.ndarray:
         """
         Query the frozen PhysicsOracle.
-        Input:  21D agent vector + 16D local signal = 37D
-        Output: 5D (energy_flux, dx, dy, transmute, drain)
+        Input:  21D agent vector + 29D local signal = 50D
         """
         with torch.no_grad():
             v = torch.tensor(vector_21[:21], dtype=torch.float32).unsqueeze(0)
-            s = torch.tensor(local_signal_16[:16], dtype=torch.float32).unsqueeze(0)
+            s = torch.tensor(local_signal_29[:29], dtype=torch.float32).unsqueeze(0) # UPDATED: 16 -> 29
             inp = torch.cat([v, s], dim=1)
             effects = self.oracle(inp)[0]
         return effects.numpy()
-
     # ══════════════════════════════════════════════════════════════════════════
     # NEW v3.0: PHEROMONE GRID (8-channel stigmergy)
     # ══════════════════════════════════════════════════════════════════════════
@@ -421,7 +420,7 @@ class World:
 
     def deposit_pheromone(self, x: int, y: int, signal: np.ndarray) -> None:
         bx, by = x % self.size, y % self.size
-        n = min(len(signal), 8)
+        n = min(len(signal), 16)
         self.pheromone_grid[bx, by, :n] += signal[:n]
         np.clip(self.pheromone_grid[bx, by], 0.0, 1.0,
                 out=self.pheromone_grid[bx, by])
@@ -765,19 +764,18 @@ class World:
         """Return recent world events for frontend events feed."""
         return list(reversed(self._event_log[-n:])) if hasattr(self, '_event_log') else []
 
+    # world.py
     def get_local_signal(self, x: int, y: int) -> np.ndarray:
         """
-        Build 16D local signal vector for Oracle query and sensing.
-        Combines resources, knowledge, pheromones.
+        Build 29D local signal vector for Oracle query and sensing.
+        Combines resources, knowledge, pheromones, memes.
         """
         bx, by = x % self.size, y % self.size
-        sig = np.zeros(16, dtype=float)
+        sig = np.zeros(29, dtype=float)  # UPDATED: 16 -> 29
         sig[:4]  = self.resources[bx, by]
         sig[4]   = self.knowledge_field[bx, by]
-        sig[5:13] = self.pheromone_grid[bx, by]
-        sig[13]  = self.meme_grid[bx, by, 0]  # danger
-        sig[14]  = self.meme_grid[bx, by, 1]  # resource
-        sig[15]  = self.meme_grid[bx, by, 2]  # sacred
+        sig[5:21] = self.pheromone_grid[bx, by]       # 16 Pheromone channels
+        sig[21:29] = self.meme_grid[bx, by, :8]       # 8 Meme channels
         return sig
 
     @property
