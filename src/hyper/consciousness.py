@@ -50,7 +50,7 @@ from metacognition import (
 )
 
 # ── Time step ───────────────────────────────────────────────────────────────
-DT = 0.06  # Schrödinger time step (task level)
+DT = 0.025  # Schrödinger time step (task level)
 
 # ── Action vocabulary (backward-compatible base actions) ────────────────────
 # These map to compositions of primitives from the Action Algebra.
