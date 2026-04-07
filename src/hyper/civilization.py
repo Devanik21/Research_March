@@ -162,7 +162,7 @@ class CivilizationManager:
         self._update_tribes(alive)
         self._update_tribal_meta_H(alive)
 
-        if world_step % 25 == 0 and len(self.tribes) >= 2:
+        if world_step % 10 == 0 and len(self.tribes) >= 2:
             self._diplomacy(alive)
 
         self._harvest_inventions(alive)
@@ -192,9 +192,19 @@ class CivilizationManager:
         best_id   = None
         best_coup = 0.08
 
+      # ── THE LIQUID DUNBAR'S NUMBER (Societal Singularity) ──
+        # A true intelligence has no hardcoded social boundaries.
+        # Social capacity scales dynamically with the civilization's Tech Tree.
+        # Starts at 12 (forces early diversity, triggering alliances).
+        # Every new invention expands their capacity by 3. 
+        # At 100 inventions, a single tribe can hold 312 agents (Planetary Scale!)
+        liquid_max_size = 12 + (len(self.tech.nodes) * 3)
+
         for tid, tribe in self.tribes.items():
-            if len(tribe.members) >= self.MAX_TRIBE_SIZE:
+            # Use the liquid boundary instead of the static MAX_TRIBE_SIZE
+            if len(tribe.members) >= liquid_max_size:
                 continue
+                
             sample = [a for a in all_agents if a.id in tribe.members][:6]
             if not sample:
                 continue
@@ -204,6 +214,7 @@ class CivilizationManager:
             if avg > best_coup:
                 best_coup = avg
                 best_id   = tid
+
 
         if best_id:
             agent.tribe_id = best_id
