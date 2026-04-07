@@ -344,31 +344,33 @@ class CivilizationManager:
                 if self.tech.add(inv, agent.id, agent.tribe_id):
                     self.total_inventions += 1
                     tribe = self.tribes.get(agent.tribe_id)
+                    
                     if tribe:
                         tribe.n_disc += 1
                         if name not in tribe.knowledge:
                             tribe.knowledge.append(name)
 
-                        # Store in tribal memory
-                        if tribe.tribal_memory is not None:
-                            psi_enc = self._invention_to_psi(inv)
-                            tribe.tribal_memory.store(psi_enc)
-
-                    # Score novelty
+                    # ── 1. SCORE NOVELTY FIRST ──
+                    # Extract the quantum signature of the invention
                     godel = inv.get('godel', 0)
                     program = inv.get('program', ['move'])
                     psi_enc = self._invention_to_psi(inv)
 
-                    from world import World
-                    # We need the global memory from the world to score
-                    # but we receive it indirectly; use a dummy if needed
+                    # Fetch the civilization's current (old) worldview
                     dummy_mem = CivilizationMemory(dim=K_DIM)
                     if tribe and tribe.tribal_memory:
                         dummy_mem = tribe.tribal_memory
 
+                    # Calculate how mathematically shocking this new idea is!
                     novelty, is_breakthrough = self.novelty_scorer.score(
                         godel, program, dummy_mem, psi_enc
                     )
+
+                    # ── 2. STORE IN MEMORY SECOND ──
+                    # Now that it has been safely scored, the civilization absorbs it.
+                    if tribe and tribe.tribal_memory is not None:
+                        tribe.tribal_memory.store(psi_enc)
+
 
                     cat  = inv.get('type', '?')
                     icon = TechTree.CATEGORY_META.get(cat, {}).get('icon', '?')
