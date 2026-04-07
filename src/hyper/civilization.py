@@ -190,7 +190,7 @@ class CivilizationManager:
     def _assign(self, agent, all_agents: list) -> None:
         """Find best-fit tribe or create new one."""
         best_id   = None
-        best_coup = 0.32
+        best_coup = 0.08
 
         for tid, tribe in self.tribes.items():
             if len(tribe.members) >= self.MAX_TRIBE_SIZE:
@@ -281,12 +281,12 @@ class CivilizationManager:
 
                 ratio = a.power / (b.power + 1e-3)
 
-                if ratio > 1.6 and self.rng.random() < 0.10:
-                    self._war(a, b)
-                elif ratio < 0.625 and self.rng.random() < 0.10:
-                    self._war(b, a)
-                elif 0.65 < ratio < 1.54 and self.rng.random() < 0.11:
+                if 0.5 < ratio < 2.0 and self.rng.random() < 0.60:
                     self._ally(a, b)
+                elif (ratio > 3.0 or ratio < 0.33) and self.rng.random() < 0.02:
+                    # War ONLY happens under extreme power disparity AND rarity
+                    self._war(a, b)
+                  
 
     def _war(self, aggressor: Tribe, target: Tribe) -> None:
         aggressor.wars.add(target.id)
