@@ -435,7 +435,7 @@ class World:
             + np.roll(g, 1, 0) + np.roll(g, -1, 0)
             + np.roll(g, 1, 1) + np.roll(g, -1, 1)
         ) / 5.0
-        self.pheromone_grid = diffused * 0.85  # 5% evaporation
+        self.pheromone_grid = diffused * 0.90  # 5% evaporation
 
     # ══════════════════════════════════════════════════════════════════════════
     # NEW v3.0: MEME GRID (3-channel stigmergic cultural memory)
