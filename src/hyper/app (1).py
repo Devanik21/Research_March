@@ -279,8 +279,11 @@ if step10: run_steps(10)
 if step50: run_steps(50)
 if auto:
     run_steps(st.session_state.speed)
-    time.sleep(0.05)
-    st.rerun()
+    # Only refresh the UI every 5 ticks to save massive rendering overhead
+    if W.step_count % 10 == 0:
+        st.rerun()
+    else:
+        time.sleep(0.01)
 
 # Re-pull after potential steps
 alive_agents = [a for a in EN.agents.values() if a.alive]
