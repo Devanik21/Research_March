@@ -25,9 +25,9 @@ from typing import Optional, Dict, List, Tuple, Set
 K_DIM       = 64        # Total Hilbert space dimension per agent
 K_TASK      = 24        # Dims 0–15: task-level cognition
 K_META      = 40        # Dims 16–31: meta-cognition (learning about learning)
-META_DT     = 0.08      # Meta-level Schrödinger time step (slower than task)
+META_DT     = 0.005      # Meta-level Schrödinger time step (slower than task)
 GODEL_BASE  = 19        # Base for Gödel encoding (prime, > number of primitives)
-MAX_PROGRAM_LEN = 12     # Maximum length of a behavioral program
+MAX_PROGRAM_LEN = 16     # Maximum length of a behavioral program
 
 
 # ══════════════════════════════════════════════════════════════════════════════
