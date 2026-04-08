@@ -496,7 +496,76 @@ class CivilizationManager:
 
     def get_recent_events(self, n: int = 12) -> List[dict]:
         return self.civ_events[-n:]
+      
 
+    def freeze_civ(self) -> dict:
+        """Deep freeze 100% of the Civilization's culture, tech, and memory."""
+        tribes_state = {}
+        for tid, t in self.tribes.items():
+            tribes_state[tid] = {
+                'id': t.id, 'founder': t.founder, 'members': list(t.members),
+                'wars': list(t.wars), 'alliances': list(t.alliances),
+                'knowledge': t.knowledge, 'power': float(t.power),
+                'n_disc': t.n_disc, 'color': t.color, 'founded_step': t.founded_step,
+                'tribal_meta_H': t.tribal_meta_H,
+                'tribal_memory': t.tribal_memory.M if t.tribal_memory else None,
+                'memory_count': t.tribal_memory.count if t.tribal_memory else 0
+            }
+        return {
+            'tech_nodes': self.tech.nodes,
+            'tech_edges': self.tech.edges,
+            'tech_bonus': self.tech.global_bonus,
+            'tribes': tribes_state,
+            'novelty_history': self.novelty_scorer.novelty_history,
+            'known_godels': self.novelty_scorer.known_godels,
+            'breakthroughs': getattr(self.novelty_scorer, 'breakthroughs', []),
+            'total_wars': self.total_wars,
+            'total_alliances': self.total_alliances,
+            'total_inventions': self.total_inventions,
+            'total_trades': getattr(self, 'total_trades', 0),
+            'total_schisms': self.total_schisms,
+            'extinctions': self.extinctions,
+            'civ_events': self.civ_events
+        }
+
+    def thaw_civ(self, state: dict):
+        """Resurrect 100% of the Civilization from JSON."""
+        from metacognition import CivilizationMemory, K_DIM
+        self.tech.nodes = state.get('tech_nodes', {})
+        self.tech.edges = [tuple(e) for e in state.get('tech_edges', [])]
+        self.tech.global_bonus = state.get('tech_bonus', 1.0)
+
+        self.tribes = {}
+        for tid, t_data in state.get('tribes', {}).items():
+            t = Tribe(id=t_data['id'], founder=t_data['founder'])
+            t.members = set(t_data.get('members', []))
+            t.wars = set(t_data.get('wars', []))
+            t.alliances = set(t_data.get('alliances', []))
+            t.knowledge = t_data.get('knowledge', [])
+            t.power = t_data.get('power', 1.0)
+            t.n_disc = t_data.get('n_disc', 0)
+            t.color = t_data.get('color')
+            t.founded_step = t_data.get('founded_step', 0)
+            if t_data.get('tribal_meta_H') is not None:
+                t.tribal_meta_H = np.array(t_data['tribal_meta_H'])
+            if t_data.get('tribal_memory') is not None:
+                t.tribal_memory = CivilizationMemory(dim=K_DIM)
+                t.tribal_memory.M = np.array(t_data['tribal_memory'])
+                t.tribal_memory.count = t_data.get('memory_count', 0)
+            self.tribes[tid] = t
+
+        self.novelty_scorer.novelty_history = state.get('novelty_history', [])
+        self.novelty_scorer.known_godels = state.get('known_godels', [])
+        self.novelty_scorer.breakthroughs = state.get('breakthroughs', [])
+        self.total_wars = state.get('total_wars', 0)
+        self.total_alliances = state.get('total_alliances', 0)
+        self.total_inventions = state.get('total_inventions', 0)
+        self.total_trades = state.get('total_trades', 0)
+        self.total_schisms = state.get('total_schisms', 0)
+        self.extinctions = state.get('extinctions', 0)
+        self.civ_events = state.get('civ_events', [])
+
+  
     def tribe_leaderboard(self) -> List[dict]:
         rows = []
         for tid, tribe in sorted(
@@ -512,3 +581,6 @@ class CivilizationManager:
                 'color'    : tribe.color or '#7DF9FF',
             })
         return rows
+    
+
+
