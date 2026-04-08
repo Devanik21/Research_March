@@ -2192,8 +2192,11 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 font=dict(color='#445', size=8),
             )
             st.plotly_chart(fig_cult2, use_container_width=True, key='cult_ratchet_v3')
+        # ── WITH THIS IMMORTALITY-AWARE LOGIC: ──
+        elif continuity2 > 0:
+            st.caption("✨ Tradition actively syncing between living Founders and Children!")
         else:
-            st.info("Run 50+ ticks for cultural data.")
+            st.info("Awaiting generation 1 births...")
 
     with arch_col2:
         st.markdown("<div class='section-title'>🔍 Behavioral Archetypes (KMeans)</div>",
