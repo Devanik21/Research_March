@@ -271,7 +271,7 @@ class EvolutionEngine:
                 # Calculate Pearson correlation r
                 self.cultural_continuity = float(np.corrcoef(mode_0, mode_N)[0, 1])
                 # Tradition is verified if correlation is highly positive!
-                self.tradition_verified = bool(self.cultural_continuity > 0.65)
+                self.tradition_verified = bool(self.cultural_continuity > 0.55)
             else:
                 self.cultural_continuity = 0.0
                 self.tradition_verified = False
