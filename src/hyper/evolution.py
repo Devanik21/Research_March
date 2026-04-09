@@ -391,6 +391,10 @@ class EvolutionEngine:
                 'meme_pool': getattr(a, 'meme_pool', []),
                 'caste_gene': getattr(a, 'caste_gene', [0,0,0,0]),
                 'is_fertile': getattr(a, 'is_fertile', True),
+                # ── ADD THE 3 BIOLOGICAL GHOSTS ──
+                'strange_loop_active': bool(getattr(a, 'strange_loop_active', False)),
+                'last_action': getattr(a, 'last_action', 'rest'),
+                'tom_depth': int(getattr(a, 'tom_depth', 0)),
                 'tribe_id': getattr(a, 'tribe_id', None),
                 'reputation': float(getattr(a, 'reputation', 0.0)),
                 'n_kills': int(getattr(a, 'n_kills', 0)),
@@ -421,6 +425,7 @@ class EvolutionEngine:
             'timestamp': datetime.datetime.now().isoformat(),
             'version': 'v3.0_immortal',
             'engine': engine_state,
+            'rng_state': self.rng.get_state(),
             'world': world_state,
             'agents': agent_state,
             'civ': civ.freeze_civ()
@@ -449,6 +454,12 @@ class EvolutionEngine:
         self.phylo.clade_history = eng.get('phylo_history', [])
         self.phylo.cambrian_events = eng.get('phylo_cambrian', [])
         self.gen_behavior_archive = {int(k): np.array(v) for k, v in eng.get('gen_behavior_archive', {}).items()}
+
+      # ── RESTORE EXACT RNG TIMELINE ──
+        if 'rng_state' in state:
+            r_list = state['rng_state']
+            state_tuple = (r_list[0], np.array(r_list[1], dtype=np.uint32), r_list[2], r_list[3], r_list[4])
+            self.rng.set_state(state_tuple)
 
         # 2. Restore World Matrices
         w_state = state['world']
@@ -525,6 +536,9 @@ class EvolutionEngine:
             a.meme_pool = adata.get('meme_pool', [])
             a.caste_gene = np.array(adata.get('caste_gene', [0,0,0,0]))
             a.is_fertile = adata.get('is_fertile', True)
+            a.strange_loop_active = adata.get('strange_loop_active', False)
+            a.last_action = adata.get('last_action', 'rest')
+            a.tom_depth = adata.get('tom_depth', 0)
             a.tribe_id = adata.get('tribe_id')
             a.reputation = adata.get('reputation', 0.0)
             a.n_kills = adata.get('n_kills', 0)
