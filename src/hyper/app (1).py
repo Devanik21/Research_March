@@ -254,7 +254,7 @@ with st.sidebar:
     
     if uploaded_zip is not None:
         # ── THE FIX: Require a button click to break the infinite loop! ──
-        if st.sidebar.button("⚙️ Confirm Restore Universe", use_container_width=True):
+        if st.sidebar.button("⚙️ Confirm Restore Universe", width='stretch'):
             try:
                 with zipfile.ZipFile(uploaded_zip) as z:
                     with z.open('universe_state.json') as f:
@@ -274,7 +274,7 @@ with st.sidebar:
                 st.sidebar.error(f"Failed to restore timeline: {e}")
 
     # ── 2. FREEZE TO DOWNLOAD ──
-    if st.sidebar.button("📦 Freeze & Backup (JSON.ZIP)", use_container_width=True):
+    if st.sidebar.button("📦 Freeze & Backup (JSON.ZIP)", width='stretch'):
         with st.spinner("Freezing Quantum Matrices..."):
             try:
                 state_dict = st.session_state.engine.freeze_universe(
@@ -290,7 +290,7 @@ with st.sidebar:
                     data=zip_buffer.getvalue(),
                     file_name=f"hyperagent_universe_tick{W.step_count}.zip",
                     mime="application/zip",
-                    use_container_width=True,
+                    width='stretch',
                 )
             except Exception as e:
                 st.sidebar.error(f"Failed to freeze: {e}")
@@ -298,16 +298,16 @@ with st.sidebar:
     st.divider()
 
     c1, c2, c3 = st.columns(3)
-    step1  = c1.button("▶ ×1",   use_container_width=True)
-    step10 = c2.button("▶▶ ×10", use_container_width=True)
-    step50 = c3.button("×50",    use_container_width=True)
+    step1  = c1.button("▶ ×1",   width='stretch')
+    step10 = c2.button("▶▶ ×10", width='stretch')
+    step50 = c3.button("×50",    width='stretch')
 
     auto = st.toggle("⚡ Auto-run", value=st.session_state.auto_run)
     st.session_state.auto_run = auto
     spd  = st.slider("Steps / frame", 1, 30, st.session_state.speed, key='spd_sl')
     st.session_state.speed = spd
 
-    if st.button("🔄 Full Reset", use_container_width=True):
+    if st.button("🔄 Full Reset", width='stretch'):
         build_simulation.clear()
         for k in list(st.session_state.keys()):
             del st.session_state[k]
@@ -364,7 +364,7 @@ with st.sidebar:
             height=65, margin=dict(l=0,r=0,t=0,b=0),
             xaxis=dict(visible=False), yaxis=dict(visible=False),
         )
-        st.plotly_chart(mini, use_container_width=True, key='mini_pop')
+        st.plotly_chart(mini, width='stretch', key='mini_pop')
 
 
 # ── Execute steps ─────────────────────────────────────────────────────────────
@@ -442,7 +442,7 @@ if 'active_tab' not in st.session_state:
 
 btn_cols = st.columns(len(tab_names))
 for i, t_name in enumerate(tab_names):
-    if btn_cols[i].button(t_name, use_container_width=True):
+    if btn_cols[i].button(t_name, width='stretch'):
         st.session_state.active_tab = t_name
         st.rerun()
 
@@ -540,7 +540,7 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
             legend=dict(x=0.01, y=0.99, font=dict(color='#556',size=9),
                         bgcolor='rgba(0,0,0,0.5)', bordercolor='#1a1a3a'),
         )
-        st.plotly_chart(fig_map, use_container_width=True, key='world_map')
+        st.plotly_chart(fig_map, width='stretch', key='world_map')
 
         # Population + Energy dual-axis sparklines
         pop_h = estats.get('pop_history', [])
@@ -568,7 +568,7 @@ if st.session_state.active_tab == "🌍 WORLD MAP":
                             bgcolor='rgba(0,0,0,0)'),
                 font=dict(color='#334', size=9),
             )
-            st.plotly_chart(fig_hist, use_container_width=True, key='pop_hist_map')
+            st.plotly_chart(fig_hist, width='stretch', key='pop_hist_map')
 
     with info_col:
         st.markdown("<div class='section-title'>World Events</div>", unsafe_allow_html=True)
@@ -681,7 +681,7 @@ elif st.session_state.active_tab == "🧬 AGENTS":
                 legend=dict(font=dict(size=7,color='#556'), orientation='v'),
                 font=dict(color='#556', size=8),
             )
-            st.plotly_chart(fig_md, use_container_width=True, key='mode_donut')
+            st.plotly_chart(fig_md, width='stretch', key='mode_donut')
 
             # Collective emotion bar — brain.emotions[E.CURIOSITY..WONDER]
             avg_em = np.mean([a.brain.emotions for a in alive_agents], axis=0)
@@ -697,7 +697,7 @@ elif st.session_state.active_tab == "🧬 AGENTS":
                 yaxis=dict(gridcolor='#0d0d1e', color='#445', range=[-1,1]),
                 font=dict(color='#445', size=8),
             )
-            st.plotly_chart(fig_em, use_container_width=True, key='coll_em')
+            st.plotly_chart(fig_em, width='stretch', key='coll_em')
 
         st.divider()
 
@@ -726,7 +726,7 @@ elif st.session_state.active_tab == "🧬 AGENTS":
             yaxis=dict(color='#556', tickfont=dict(size=8)),
             font=dict(color='#556', size=8),
         )
-        st.plotly_chart(fig_heat, use_container_width=True, key='act_heat')
+        st.plotly_chart(fig_heat, width='stretch', key='act_heat')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -771,7 +771,7 @@ elif st.session_state.active_tab == "🏛 CIVILIZATION":
                 legend=dict(font=dict(size=8,color='#556')),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_tpow, use_container_width=True, key='tribe_pow')
+            st.plotly_chart(fig_tpow, width='stretch', key='tribe_pow')
 
             for r in lb[:20]:
                 war_str  = "⚔" * min(r['wars'], 5)
@@ -816,7 +816,7 @@ elif st.session_state.active_tab == "🏛 CIVILIZATION":
                 title=dict(text='War vs Alliance', font=dict(color='#556',size=10), x=0.5),
                 font=dict(color='#556', size=9),
             )
-            st.plotly_chart(fig_dip, use_container_width=True, key='dip_pie')
+            st.plotly_chart(fig_dip, width='stretch', key='dip_pie')
 
         st.divider()
 
@@ -835,7 +835,7 @@ elif st.session_state.active_tab == "🏛 CIVILIZATION":
                 yaxis=dict(gridcolor='#0d0d1e', color='#445'),
                 font=dict(color='#445', size=8),
             )
-            st.plotly_chart(fig_disc, use_container_width=True, key='tribe_disc')
+            st.plotly_chart(fig_disc, width='stretch', key='tribe_disc')
 
         st.markdown("<div class='section-title'>Civ Events</div>", unsafe_allow_html=True)
         for evt in reversed(C.get_recent_events(16)):
@@ -919,7 +919,7 @@ elif st.session_state.active_tab == "💡 TECH TREE":
                 legend=dict(font=dict(size=9,color='#556'), x=0.01, y=0.99,
                             bgcolor='rgba(0,0,0,0.5)'),
             )
-            st.plotly_chart(fig_tree, use_container_width=True, key='tech_graph')
+            st.plotly_chart(fig_tree, width='stretch', key='tech_graph')
         else:
             st.info("No inventions yet. Run more ticks!")
 
@@ -940,7 +940,7 @@ elif st.session_state.active_tab == "💡 TECH TREE":
                 font=dict(color='#556', size=9),
                 legend=dict(font=dict(size=8,color='#556')),
             )
-            st.plotly_chart(fig_cat, use_container_width=True, key='tech_pie')
+            st.plotly_chart(fig_cat, width='stretch', key='tech_pie')
 
         st.divider()
         st.markdown("<div class='section-title'>Latest Discoveries</div>", unsafe_allow_html=True)
@@ -1007,7 +1007,7 @@ elif st.session_state.active_tab == "📊 ANALYTICS":
             yaxis=dict(gridcolor='#0d0d1e', color='#445'),
             font=dict(color='#445', size=9),
         )
-        col.plotly_chart(fig, use_container_width=True, key=key)
+        col.plotly_chart(fig, width='stretch', key=key)
 
     sparkline(an1, pop_h, 'Population History',       '#7DF9FF', 'pop_an')
     sparkline(an2, eng_h, 'Avg Energy History',        '#FFD700', 'eng_an')
@@ -1039,7 +1039,7 @@ elif st.session_state.active_tab == "📊 ANALYTICS":
             yaxis=dict(color='#445', gridcolor='#0d0d1e'),
             font=dict(color='#445', size=9),
         )
-        col.plotly_chart(fig, use_container_width=True, key=key)
+        col.plotly_chart(fig, width='stretch', key=key)
 
     if alive_agents:
         histogram(an4, [a.age        for a in alive_agents], 'Age Distribution',        '#9370DB', 'age_hist')
@@ -1077,7 +1077,7 @@ elif st.session_state.active_tab == "📊 ANALYTICS":
                             bgcolor='rgba(0,0,0,0.5)'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_sc, use_container_width=True, key='cw_scatter')
+            st.plotly_chart(fig_sc, width='stretch', key='cw_scatter')
 
     with an8:
         # Generation distribution bar
@@ -1102,7 +1102,7 @@ elif st.session_state.active_tab == "📊 ANALYTICS":
                 yaxis=dict(title='Count',      color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_gen, use_container_width=True, key='gen_bar')
+            st.plotly_chart(fig_gen, width='stretch', key='gen_bar')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1184,7 +1184,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                     yaxis=dict(gridcolor='#0d0d1e', color='#445', range=[0,None]),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_psi, use_container_width=True, key='psi_amp')
+                st.plotly_chart(fig_psi, width='stretch', key='psi_amp')
 
                 # ── 2. Eigenspectrum: brain._evals → ndarray
                 evals = brain._evals.tolist()
@@ -1206,7 +1206,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                                zeroline=True, zerolinecolor='#226'),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_ev, use_container_width=True, key='eig_spec')
+                st.plotly_chart(fig_ev, width='stretch', key='eig_spec')
 
                 # ── 3. Soul frequencies: sel_agent.soul_freqs → ndarray (immutable identity)
                 soul = sel_agent.soul_freqs.tolist()
@@ -1228,7 +1228,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                                zeroline=True, zerolinecolor='#226'),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_soul, use_container_width=True, key='soul_freq')
+                st.plotly_chart(fig_soul, width='stretch', key='soul_freq')
 
             with hrc_r:
                 # ── 4. Emotions: brain.emotions[0..6] matching E enum
@@ -1246,7 +1246,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                     yaxis=dict(gridcolor='#0d0d1e', color='#445', range=[-1,1]),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_emo, use_container_width=True, key='emo_bar')
+                st.plotly_chart(fig_emo, width='stretch', key='emo_bar')
 
                 # ── 5. Hamiltonian H real part heatmap: brain.H.real
                 H_real = brain.H.real
@@ -1265,7 +1265,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                     yaxis=dict(color='#445', tickfont=dict(size=7), autorange='reversed'),
                     font=dict(color='#445', size=8),
                 )
-                st.plotly_chart(fig_H, use_container_width=True, key='ham_heat')
+                st.plotly_chart(fig_H, width='stretch', key='ham_heat')
 
                 # ── 6. Episodic memory reward curve: brain.episodic_memory List[dict]
                 mem = brain.episodic_memory   # [{reward, psi_peak, tick}, ...]
@@ -1291,7 +1291,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                                    zeroline=True, zerolinecolor='#226'),
                         font=dict(color='#445', size=9),
                     )
-                    st.plotly_chart(fig_mem, use_container_width=True, key='ep_mem')
+                    st.plotly_chart(fig_mem, width='stretch', key='ep_mem')
 
             st.divider()
 
@@ -1352,7 +1352,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                         yaxis=dict(gridcolor='#0d0d1e', color='#445'),
                         font=dict(color='#445', size=8),
                     )
-                    st.plotly_chart(fig_ac, use_container_width=True, key='act_bar')
+                    st.plotly_chart(fig_ac, width='stretch', key='act_bar')
                 else:
                     st.caption("No actions recorded yet.")
 
@@ -1376,7 +1376,7 @@ elif st.session_state.active_tab == "🔬 HRC BRAIN":
                         yaxis=dict(gridcolor='#0d0d1e', color='#445'),
                         font=dict(color='#445', size=9),
                     )
-                    st.plotly_chart(fig_meta_ev, use_container_width=True, key='meta_eig')
+                    st.plotly_chart(fig_meta_ev, width='stretch', key='meta_eig')
 
             # Absorbed inventions list
             st.markdown("<div class='section-title'>Absorbed Inventions (cultural diffusion)</div>",
@@ -1456,7 +1456,7 @@ elif st.session_state.active_tab == "📡 EVENTS FEED":
                 font=dict(color='#556', size=9),
                 legend=dict(font=dict(size=8,color='#556')),
             )
-            st.plotly_chart(fig_etp, use_container_width=True, key='evt_pie')
+            st.plotly_chart(fig_etp, width='stretch', key='evt_pie')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1502,7 +1502,7 @@ elif st.session_state.active_tab == "🗺 RESOURCES":
             yaxis=dict(showgrid=False, showticklabels=False, zeroline=False,
                        scaleanchor='x'),
         )
-        rcol.plotly_chart(fig_r, use_container_width=True, key=f'res_{r_idx}')
+        rcol.plotly_chart(fig_r, width='stretch', key=f'res_{r_idx}')
 
     st.divider()
 
@@ -1524,7 +1524,7 @@ elif st.session_state.active_tab == "🗺 RESOURCES":
         yaxis=dict(gridcolor='#0d0d1e', color='#445'),
         font=dict(color='#445', size=10),
     )
-    st.plotly_chart(fig_rtot, use_container_width=True, key='res_total')
+    st.plotly_chart(fig_rtot, width='stretch', key='res_total')
 
     st.divider()
 
@@ -1548,7 +1548,7 @@ elif st.session_state.active_tab == "🗺 RESOURCES":
                 font=dict(color='#556',size=9),
                 legend=dict(font=dict(size=8,color='#556')),
             )
-            st.plotly_chart(fig_art, use_container_width=True, key='art_pie')
+            st.plotly_chart(fig_art, width='stretch', key='art_pie')
 
         with art_right:
             st.markdown("<div class='section-title'>Recent Artifacts</div>",
@@ -1609,7 +1609,7 @@ elif st.session_state.active_tab == "🧠 META-MIND":
                 legend=dict(font=dict(size=8,color='#556'), bgcolor='rgba(0,0,0,0.5)'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_tribal, use_container_width=True, key='tribal_meta')
+            st.plotly_chart(fig_tribal, width='stretch', key='tribal_meta')
 
         # ── Cognitive Clade Distribution ──────────────────────────────────────
         with mm2:
@@ -1631,7 +1631,7 @@ elif st.session_state.active_tab == "🧠 META-MIND":
                     yaxis=dict(title='Members', color='#445', gridcolor='#0d0d1e'),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_clades, use_container_width=True, key='clade_bar')
+                st.plotly_chart(fig_clades, width='stretch', key='clade_bar')
             else:
                 st.info("Run more ticks for clade data.")
 
@@ -1673,7 +1673,7 @@ elif st.session_state.active_tab == "🧠 META-MIND":
                     yaxis=dict(color='#445', gridcolor='#0d0d1e'),
                     font=dict(color='#445', size=9),
                 )
-                st.plotly_chart(fig_nov, use_container_width=True, key='novelty_chart')
+                st.plotly_chart(fig_nov, width='stretch', key='novelty_chart')
             else:
                 st.info("No novelty data yet.")
 
@@ -1724,7 +1724,7 @@ elif st.session_state.active_tab == "🧠 META-MIND":
                 yaxis=dict(color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_ch, use_container_width=True, key='clade_hist')
+            st.plotly_chart(fig_ch, width='stretch', key='clade_hist')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1766,7 +1766,7 @@ elif st.session_state.active_tab == "🔬 KNOWLEDGE":
             xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
             yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, scaleanchor='x'),
         )
-        st.plotly_chart(fig_kf, use_container_width=True, key='kf_heatmap')
+        st.plotly_chart(fig_kf, width='stretch', key='kf_heatmap')
 
         # Field stats
         st.markdown(
@@ -1801,7 +1801,7 @@ elif st.session_state.active_tab == "🔬 KNOWLEDGE":
                 yaxis=dict(color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_gm, use_container_width=True, key='gm_spec')
+            st.plotly_chart(fig_gm, width='stretch', key='gm_spec')
         else:
             st.info("No global memory yet.")
 
@@ -1847,7 +1847,7 @@ elif st.session_state.active_tab == "🔬 KNOWLEDGE":
                 yaxis=dict(title='Count', color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_es, use_container_width=True, key='eigenspread_hist')
+            st.plotly_chart(fig_es, width='stretch', key='eigenspread_hist')
 
     # ── Idea Interference / Artifact Map ─────────────────────────────────────
     with kp4:
@@ -1870,7 +1870,7 @@ elif st.session_state.active_tab == "🔬 KNOWLEDGE":
                 font=dict(color='#556', size=9),
                 legend=dict(font=dict(size=8, color='#556')),
             )
-            st.plotly_chart(fig_art2, use_container_width=True, key='art_pie2')
+            st.plotly_chart(fig_art2, width='stretch', key='art_pie2')
         else:
             st.info("No artifacts placed yet.")
 
@@ -1990,7 +1990,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 xaxis=dict(showgrid=False, showticklabels=False, zeroline=False, range=[-0.5, W.size-0.5]),
                 yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, range=[-0.5, W.size-0.5]),
             )
-            st.plotly_chart(fig_meme, use_container_width=True, key='replicator_live')
+            st.plotly_chart(fig_meme, width='stretch', key='replicator_live')
 
         else:
             # === ♾️ INFINITE STIGMERGY GARDEN (GeNeSIS PARITY) ===
@@ -2014,13 +2014,13 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 if alive_agents: fig1.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
                 fig1.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 ALPHA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
                                    xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
-                st.plotly_chart(fig1, use_container_width=True, key="live_sg1")
+                st.plotly_chart(fig1, width='stretch', key="live_sg1")
             with sg_c2: 
                 fig2 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 202).transpose(1,0,2)))
                 if alive_agents: fig2.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
                 fig2.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 BETA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
                                    xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
-                st.plotly_chart(fig2, use_container_width=True, key="live_sg2")
+                st.plotly_chart(fig2, width='stretch', key="live_sg2")
             
             sg_c3, sg_c4 = st.columns(2)
             with sg_c3: 
@@ -2028,13 +2028,13 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 if alive_agents: fig3.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
                 fig3.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 GAMMA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
                                    xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
-                st.plotly_chart(fig3, use_container_width=True, key="live_sg3")
+                st.plotly_chart(fig3, width='stretch', key="live_sg3")
             with sg_c4: 
                 fig4 = go.Figure(go.Image(z=generate_garden_view(garden_freq, 404).transpose(1,0,2)))
                 if alive_agents: fig4.add_trace(go.Scatter(x=[a.x for a in alive_agents], y=[a.y for a in alive_agents], mode='markers', marker=dict(size=3, color='white', opacity=0.2), hoverinfo='skip', showlegend=False))
                 fig4.update_layout(height=260, margin=dict(l=0,r=0,t=30,b=0), title=dict(text="🌈 DELTA REPLICANT", font=dict(color='#7DF9FF', size=11, family='JetBrains Mono')),
                                    xaxis=dict(visible=False, range=[-0.5, W.size-0.5]), yaxis=dict(visible=False, range=[-0.5, W.size-0.5]), paper_bgcolor='#000')
-                st.plotly_chart(fig4, use_container_width=True, key="live_sg4")
+                st.plotly_chart(fig4, width='stretch', key="live_sg4")
 
         st.markdown(
             f"<div class='kpi-card'>"
@@ -2082,7 +2082,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
             xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
             yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, scaleanchor='x'),
         )
-        st.plotly_chart(fig_ph, use_container_width=True, key='phero_v3')
+        st.plotly_chart(fig_ph, width='stretch', key='phero_v3')
 
     st.divider()
 
@@ -2136,7 +2136,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 legend=dict(font=dict(size=9, color='#556'),
                             bgcolor='rgba(0,0,0,0.5)'),
             )
-            st.plotly_chart(fig_kur2, use_container_width=True, key='kuramoto_v3')
+            st.plotly_chart(fig_kur2, width='stretch', key='kuramoto_v3')
 
     with phi_col2:
         st.markdown("<div class='section-title'>Φ IIT Consciousness (Integrated Information Theory)</div>",
@@ -2169,7 +2169,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 yaxis=dict(title='Agents', color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_phi2, use_container_width=True, key='phi_v3')
+            st.plotly_chart(fig_phi2, width='stretch', key='phi_v3')
 
             fig_phi_e2 = go.Figure(go.Scatter(
                 x=phi_vals2, y=[a.energy for a in alive_agents],
@@ -2184,7 +2184,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 yaxis=dict(title='Energy', color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_phi_e2, use_container_width=True, key='phi_energy_v3')
+            st.plotly_chart(fig_phi_e2, width='stretch', key='phi_energy_v3')
 
     st.divider()
 
@@ -2214,7 +2214,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 font=dict(color='#556', size=9),
                 legend=dict(font=dict(size=9, color='#556')),
             )
-            st.plotly_chart(fig_roles2, use_container_width=True, key='roles_v3')
+            st.plotly_chart(fig_roles2, width='stretch', key='roles_v3')
             n_fertile2 = sum(1 for a in alive_agents if getattr(a, 'is_fertile', True))
             rc1, rc2 = st.columns(2)
             rc1.metric("👸 Fertile",  n_fertile2)
@@ -2249,7 +2249,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 yaxis=dict(color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_inv2, use_container_width=True, key='inventory_v3')
+            st.plotly_chart(fig_inv2, width='stretch', key='inventory_v3')
 
     st.divider()
 
@@ -2285,7 +2285,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 legend=dict(font=dict(size=7, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
                 font=dict(color='#445', size=8),
             )
-            st.plotly_chart(fig_cult2, use_container_width=True, key='cult_ratchet_v3')
+            st.plotly_chart(fig_cult2, width='stretch', key='cult_ratchet_v3')
         # ── WITH THIS IMMORTALITY-AWARE LOGIC: ──
         elif continuity2 > 0:
             st.caption("✨ Tradition actively syncing between living Founders and Children!")
@@ -2314,7 +2314,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 yaxis=dict(color='#445', gridcolor='#0d0d1e'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_arch2, use_container_width=True, key='archetypes_v3')
+            st.plotly_chart(fig_arch2, width='stretch', key='archetypes_v3')
         else:
             st.info("Run 15+ ticks.")
 
@@ -2347,7 +2347,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                            range=[-0.5, W.size + 0.5], scaleanchor='x'),
                 legend=dict(font=dict(size=8, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
             )
-            st.plotly_chart(fig_s2, use_container_width=True, key='structs_v3')
+            st.plotly_chart(fig_s2, width='stretch', key='structs_v3')
         else:
             st.info("No structures yet — agents need more ticks to build.")
 
@@ -2381,7 +2381,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 legend=dict(font=dict(size=7, color='#556'), bgcolor='rgba(0,0,0,0.5)'),
                 font=dict(color='#445', size=9),
             )
-            st.plotly_chart(fig_ai2, use_container_width=True, key='active_inference_v3')
+            st.plotly_chart(fig_ai2, width='stretch', key='active_inference_v3')
 
     with gol_col2:
         st.markdown("<div class='section-title'>🧩 GoL Scratchpad (Largest Writer)</div>",
@@ -2403,7 +2403,7 @@ elif st.session_state.active_tab == "🧬 v3.0 EMERGENCE":
                 xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
                 yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, scaleanchor='x'),
             )
-            st.plotly_chart(fig_gol2, use_container_width=True, key='gol_v3')
+            st.plotly_chart(fig_gol2, width='stretch', key='gol_v3')
 
     with dna_col2:
         st.markdown("<div class='section-title'>🧬 Simulation DNA Export</div>",
