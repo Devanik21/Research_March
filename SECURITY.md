@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Currently, the master branch is supported with security updates.
+Currently, the main branch is supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
