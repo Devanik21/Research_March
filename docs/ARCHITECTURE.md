@@ -8,7 +8,7 @@ The repository houses two primary research projects under the `src/` directory:
     *   Treats machine learning as a problem of wave physics on a Riemannian manifold.
     *   Classification is performed by measuring quantum-mechanical resonance energies on a continuously evolving geometric surface sculpted by discrete Ricci flow.
     *   Utilizes GPU acceleration via NVIDIA RAPIDS (cuML, cuDF) and CuPy.
-    *   See `docs/RWC_GWL_WhitePaper.md` and `docs/Readme_1.md` for in-depth mathematical foundations and iterative history.
+    *   See RWC_GWL_WhitePaper.md and docs/Readme_1.md for in-depth mathematical foundations and iterative history.
 
 2.  **`src/hyper/` (Event Horizon Spectral Life Simulator)**
     *   A simulation featuring agents, civilization dynamics, and a Streamlit frontend application (`app.py`).
